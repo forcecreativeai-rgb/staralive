@@ -564,13 +564,7 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
     setActiveScene(sceneId)
     setGenerating(true)
 
-    // Simulated generation — swap with real OpenAI call in production
-    // POST https://api.openai.com/v1/images/generations
-    // { model: "gpt-image-1", prompt: AI_PROMPTS[sceneId], n: 1, size: "1024x1024" }
-    await new Promise(r => setTimeout(r, 2500))
-
-    // Placeholder gradient as stand-in for real image
-    const placeholders = {
+    const fallbacks = {
       album:     'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
       jet:       'linear-gradient(135deg, #0d0d0d 0%, #1a1200 50%, #2d1f00 100%)',
       stadium:   'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 40%, #2e1a00 100%)',
@@ -579,9 +573,45 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
       studio:    'linear-gradient(135deg, #0a1a0a 0%, #001a0a 50%, #0a2e1a 100%)',
     }
 
-    setGenerated(g => ({ ...g, [sceneId]: placeholders[sceneId] }))
-    setGenerating(false)
-    showNotify('🎨 Image generated — ready for your album')
+    try {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+      if (!apiKey) throw new Error('No API key')
+
+      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}. Cinematic, professional, high quality.`
+
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt,
+          n: 1,
+          size: '1024x1024',
+          quality: 'standard',
+          response_format: 'url',
+        }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error?.message || 'Generation failed')
+      }
+
+      const data = await response.json()
+      const imageUrl = data.data[0].url
+      setGenerated(g => ({ ...g, [sceneId]: imageUrl }))
+      showNotify('🎨 Image generated — ready for your album')
+
+    } catch (err) {
+      console.error('OpenAI error:', err)
+      setGenerated(g => ({ ...g, [sceneId]: fallbacks[sceneId] }))
+      showNotify('⚠️ Generation failed — showing placeholder')
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
