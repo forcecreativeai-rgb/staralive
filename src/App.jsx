@@ -118,40 +118,150 @@ function Notification({ message, visible }) {
 function AuditionScene({ onAdvance }) {
   const [name, setName] = useState('')
   const [genre, setGenre] = useState('')
+  const [focused, setFocused] = useState(false)
 
   return (
     <div style={{ maxWidth: '520px', margin: '0 auto', padding: '0 20px' }}>
-      <SceneHeader
-        act="Act I — Audition"
-        title="What's Your Name, Star?"
-        subtitle="Every legend starts somewhere. Yours starts right here."
-      />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeUp 0.6s 0.15s ease both', opacity: 0 }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Artist Name
-          </label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Enter your artist name..."
-            style={{
-              width: '100%',
-              background: 'var(--surface2)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              borderRadius: '4px',
-              padding: '14px 18px',
-              color: 'var(--text)',
-              fontSize: '16px',
-              outline: 'none',
-              transition: 'border-color 0.2s',
-            }}
-            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(212,175,55,0.2)'}
-          />
+      {/* Spotlight glow behind headline */}
+      <div style={{
+        position: 'relative',
+        textAlign: 'center',
+        marginBottom: '40px',
+        animation: 'fadeUp 0.6s ease both',
+      }}>
+        {/* Spotlight beam */}
+        <div style={{
+          position: 'absolute',
+          top: '-60px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '180px',
+          height: '220px',
+          background: 'radial-gradient(ellipse at top, rgba(212,175,55,0.18) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{
+          fontSize: '11px',
+          letterSpacing: '0.35em',
+          color: 'var(--gold)',
+          textTransform: 'uppercase',
+          marginBottom: '16px',
+          fontWeight: 500,
+        }}>
+          Act I — Star Discovery
         </div>
 
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(30px, 6vw, 54px)',
+          fontWeight: 900,
+          lineHeight: 1.05,
+          marginBottom: '16px',
+          background: 'linear-gradient(180deg, #ffffff 30%, rgba(212,175,55,0.85) 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          animation: 'glow 3s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 24px rgba(212,175,55,0.25))',
+        }}>
+          You've Been<br />Discovered.
+        </h1>
+
+        <p style={{
+          color: 'var(--text-dim)',
+          fontSize: '16px',
+          lineHeight: 1.6,
+          fontStyle: 'italic',
+          letterSpacing: '0.02em',
+        }}>
+          We'd like to extend you an offer.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeUp 0.6s 0.2s ease both', opacity: 0 }}>
+
+        {/* Marquee-style input */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '11px',
+            letterSpacing: '0.25em',
+            color: 'var(--gold)',
+            marginBottom: '12px',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+          }}>
+            What name should we put in lights?
+          </label>
+
+          {/* Stage light frame */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '6px',
+            padding: '2px',
+            background: focused
+              ? 'linear-gradient(90deg, #d4af37, #f0d060, #b8960c, #f0d060, #d4af37)'
+              : 'rgba(212,175,55,0.2)',
+            backgroundSize: focused ? '200% 100%' : '100% 100%',
+            animation: focused ? 'shimmer 1.5s linear infinite' : 'none',
+            transition: 'background 0.3s',
+            boxShadow: focused ? '0 0 24px rgba(212,175,55,0.3), 0 0 60px rgba(212,175,55,0.1)' : 'none',
+          }}>
+            {/* Bulb dots top */}
+            {focused && (
+              <div style={{ display: 'flex', justifyContent: 'space-around', padding: '4px 8px 0' }}>
+                {Array(9).fill(0).map((_, i) => (
+                  <div key={i} style={{
+                    width: '5px', height: '5px', borderRadius: '50%',
+                    background: 'var(--gold)',
+                    opacity: 0.4 + (i % 3) * 0.2,
+                    animation: `pulse ${0.8 + i * 0.1}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </div>
+            )}
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Your name in lights..."
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              style={{
+                width: '100%',
+                background: 'var(--surface)',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '16px 20px',
+                color: focused ? '#fff' : 'var(--text)',
+                fontSize: '18px',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                outline: 'none',
+                textAlign: 'center',
+                textShadow: focused && name ? '0 0 20px rgba(212,175,55,0.6)' : 'none',
+                transition: 'all 0.2s',
+              }}
+            />
+            {/* Bulb dots bottom */}
+            {focused && (
+              <div style={{ display: 'flex', justifyContent: 'space-around', padding: '0 8px 4px' }}>
+                {Array(9).fill(0).map((_, i) => (
+                  <div key={i} style={{
+                    width: '5px', height: '5px', borderRadius: '50%',
+                    background: 'var(--gold)',
+                    opacity: 0.4 + (i % 3) * 0.2,
+                    animation: `pulse ${0.9 + i * 0.1}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Genre */}
         <div>
           <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '10px', textTransform: 'uppercase' }}>
             Your Genre
@@ -178,13 +288,13 @@ function AuditionScene({ onAdvance }) {
           </div>
         </div>
 
-        <div style={{ paddingTop: '12px', textAlign: 'center' }}>
+        <div style={{ paddingTop: '8px', textAlign: 'center' }}>
           <GoldButton
             onClick={() => onAdvance({ artistName: name, genre })}
             disabled={!name.trim() || !genre}
             size="lg"
           >
-            Step Into the Spotlight
+            Claim Your Destiny
           </GoldButton>
         </div>
       </div>
@@ -574,39 +684,25 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
     }
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-      if (!apiKey) throw new Error('No API key')
-
       const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}. Cinematic, professional, high quality.`
 
-      const response = await fetch('https://api.openai.com/v1/images/generations', {
+      const response = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'dall-e-3',
-          prompt,
-          n: 1,
-          size: '1024x1024',
-          quality: 'standard',
-          response_format: 'url',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
       })
 
       if (!response.ok) {
         const err = await response.json()
-        throw new Error(err.error?.message || 'Generation failed')
+        throw new Error(err.error || 'Generation failed')
       }
 
       const data = await response.json()
-      const imageUrl = data.data[0].url
-      setGenerated(g => ({ ...g, [sceneId]: imageUrl }))
+      setGenerated(g => ({ ...g, [sceneId]: data.url }))
       showNotify('🎨 Image generated — ready for your album')
 
     } catch (err) {
-      console.error('OpenAI error:', err)
+      console.error('Image error:', err)
       setGenerated(g => ({ ...g, [sceneId]: fallbacks[sceneId] }))
       showNotify('⚠️ Generation failed — showing placeholder')
     } finally {
@@ -649,16 +745,23 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
               {/* Image area */}
               <div style={{
                 height: '140px',
-                background: isGenerated
-                  ? generated[scene.id]
-                  : 'var(--surface2)',
+                background: (isGenerated && generated[scene.id].startsWith('linear')) ? generated[scene.id] : 'var(--surface2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
+                overflow: 'hidden',
               }}>
+                {/* Real AI image */}
+                {isGenerated && !isLoading && generated[scene.id].startsWith('http') && (
+                  <img
+                    src={generated[scene.id]}
+                    alt={scene.label}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                  />
+                )}
                 {isLoading && (
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
                     <div style={{ width: '28px', height: '28px', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 10px' }} />
                     <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>GENERATING...</div>
                   </div>
@@ -667,7 +770,7 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
                   <div style={{ fontSize: '36px' }}>{scene.emoji}</div>
                 )}
                 {isGenerated && !isLoading && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--gold)', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#0a0a0a' }}>
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--gold)', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#0a0a0a', zIndex: 2 }}>
                     DONE
                   </div>
                 )}
