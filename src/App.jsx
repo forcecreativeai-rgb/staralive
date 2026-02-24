@@ -118,40 +118,150 @@ function Notification({ message, visible }) {
 function AuditionScene({ onAdvance }) {
   const [name, setName] = useState('')
   const [genre, setGenre] = useState('')
+  const [focused, setFocused] = useState(false)
 
   return (
     <div style={{ maxWidth: '520px', margin: '0 auto', padding: '0 20px' }}>
-      <SceneHeader
-        act="Act I — Audition"
-        title="What's Your Name, Star?"
-        subtitle="Every legend starts somewhere. Yours starts right here."
-      />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeUp 0.6s 0.15s ease both', opacity: 0 }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Artist Name
-          </label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Enter your artist name..."
-            style={{
-              width: '100%',
-              background: 'var(--surface2)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              borderRadius: '4px',
-              padding: '14px 18px',
-              color: 'var(--text)',
-              fontSize: '16px',
-              outline: 'none',
-              transition: 'border-color 0.2s',
-            }}
-            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(212,175,55,0.2)'}
-          />
+      {/* Spotlight glow behind headline */}
+      <div style={{
+        position: 'relative',
+        textAlign: 'center',
+        marginBottom: '40px',
+        animation: 'fadeUp 0.6s ease both',
+      }}>
+        {/* Spotlight beam */}
+        <div style={{
+          position: 'absolute',
+          top: '-60px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '180px',
+          height: '220px',
+          background: 'radial-gradient(ellipse at top, rgba(212,175,55,0.18) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{
+          fontSize: '11px',
+          letterSpacing: '0.35em',
+          color: 'var(--gold)',
+          textTransform: 'uppercase',
+          marginBottom: '16px',
+          fontWeight: 500,
+        }}>
+          Discovery
         </div>
 
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(30px, 6vw, 54px)',
+          fontWeight: 900,
+          lineHeight: 1.05,
+          marginBottom: '16px',
+          background: 'linear-gradient(180deg, #ffffff 30%, rgba(212,175,55,0.85) 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          animation: 'glow 3s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 24px rgba(212,175,55,0.25))',
+        }}>
+          You've Been<br />Discovered.
+        </h1>
+
+        <p style={{
+          color: 'var(--text-dim)',
+          fontSize: '16px',
+          lineHeight: 1.6,
+          fontStyle: 'italic',
+          letterSpacing: '0.02em',
+        }}>
+          We'd like to extend you an offer.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeUp 0.6s 0.2s ease both', opacity: 0 }}>
+
+        {/* Marquee-style input */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '11px',
+            letterSpacing: '0.25em',
+            color: 'var(--gold)',
+            marginBottom: '12px',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+          }}>
+            What name should we put in lights?
+          </label>
+
+          {/* Stage light frame */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '6px',
+            padding: '2px',
+            background: focused
+              ? 'linear-gradient(90deg, #d4af37, #f0d060, #b8960c, #f0d060, #d4af37)'
+              : 'rgba(212,175,55,0.2)',
+            backgroundSize: focused ? '200% 100%' : '100% 100%',
+            animation: focused ? 'shimmer 1.5s linear infinite' : 'none',
+            transition: 'background 0.3s',
+            boxShadow: focused ? '0 0 24px rgba(212,175,55,0.3), 0 0 60px rgba(212,175,55,0.1)' : 'none',
+          }}>
+            {/* Bulb dots top */}
+            {focused && (
+              <div style={{ display: 'flex', justifyContent: 'space-around', padding: '4px 8px 0' }}>
+                {Array(9).fill(0).map((_, i) => (
+                  <div key={i} style={{
+                    width: '5px', height: '5px', borderRadius: '50%',
+                    background: 'var(--gold)',
+                    opacity: 0.4 + (i % 3) * 0.2,
+                    animation: `pulse ${0.8 + i * 0.1}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </div>
+            )}
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Your name in lights..."
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              style={{
+                width: '100%',
+                background: 'var(--surface)',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '16px 20px',
+                color: focused ? '#fff' : 'var(--text)',
+                fontSize: '18px',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                outline: 'none',
+                textAlign: 'center',
+                textShadow: focused && name ? '0 0 20px rgba(212,175,55,0.6)' : 'none',
+                transition: 'all 0.2s',
+              }}
+            />
+            {/* Bulb dots bottom */}
+            {focused && (
+              <div style={{ display: 'flex', justifyContent: 'space-around', padding: '0 8px 4px' }}>
+                {Array(9).fill(0).map((_, i) => (
+                  <div key={i} style={{
+                    width: '5px', height: '5px', borderRadius: '50%',
+                    background: 'var(--gold)',
+                    opacity: 0.4 + (i % 3) * 0.2,
+                    animation: `pulse ${0.9 + i * 0.1}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Genre */}
         <div>
           <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '10px', textTransform: 'uppercase' }}>
             Your Genre
@@ -178,13 +288,13 @@ function AuditionScene({ onAdvance }) {
           </div>
         </div>
 
-        <div style={{ paddingTop: '12px', textAlign: 'center' }}>
+        <div style={{ paddingTop: '8px', textAlign: 'center' }}>
           <GoldButton
             onClick={() => onAdvance({ artistName: name, genre })}
             disabled={!name.trim() || !genre}
             size="lg"
           >
-            Step Into the Spotlight
+            Claim Your Destiny
           </GoldButton>
         </div>
       </div>
@@ -217,7 +327,7 @@ function SignScene({ artistName, genre, onAdvance }) {
   return (
     <div style={{ maxWidth: '580px', margin: '0 auto', padding: '0 20px' }}>
       <SceneHeader
-        act="Act II — The Deal"
+        act="Signing"
         title="Sign With StarAlive Records"
         subtitle={`${artistName}, the label has reviewed your audition. This is the moment.`}
       />
@@ -301,6 +411,68 @@ function SignScene({ artistName, genre, onAdvance }) {
 
 // ─── ACT III: STUDIO ─────────────────────────────────────────────────────────
 
+const BOOTH_TIPS = [
+  { tip: 'Wear cans.', sub: 'Headphones keep the track out of the mic.' },
+  { tip: 'Dead room only.', sub: 'No bathrooms, glass, or bare walls. Kill the bounce.' },
+  { tip: 'Work the mic.', sub: 'Get close for warmth, pull back for loud notes.' },
+  { tip: 'Kill your phone.', sub: 'Airplane mode. One buzz ruins the take.' },
+  { tip: "Hydrate, don't caffeinate.", sub: 'Coffee dries the cords. Water is the move.' },
+  { tip: 'Pop filter up.', sub: "Kills plosives on P's and B's before they hit tape." },
+  { tip: 'Rest before you record.', sub: 'Tired voice = thin tone. Sleep is free studio time.' },
+  { tip: 'First take energy.', sub: "Your best performance is usually take 2 or 3. Don't overthink it." },
+  { tip: "Stand, don't sit.", sub: 'Diaphragm opens up standing. Sitting compresses your air.' },
+  { tip: 'Gain staging matters.', sub: 'Peaks above -6dB clip in the mix. Leave headroom.' },
+  { tip: 'Record dry.', sub: 'Capture the clean vocal. Add reverb in mix, not tracking.' },
+  { tip: 'Nail the consonants.', sub: "Crisp T's and K's cut through the mix. Lazy consonants disappear." },
+]
+
+function BoothTip() {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * BOOTH_TIPS.length))
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setIdx(i => (i + 1) % BOOTH_TIPS.length)
+        setVisible(true)
+      }, 400)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const tip = BOOTH_TIPS[idx]
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '12px',
+      padding: '14px 18px',
+      background: 'rgba(212,175,55,0.05)',
+      border: '1px solid rgba(212,175,55,0.15)',
+      borderLeft: '3px solid var(--gold)',
+      borderRadius: '6px',
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 0.35s ease',
+      minHeight: '64px',
+      marginTop: '24px',
+    }}>
+      <div style={{ fontSize: '16px', marginTop: '1px', flexShrink: 0 }}>🎙️</div>
+      <div>
+        <div style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>
+          From the Booth
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '3px' }}>
+          {tip.tip}
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: 1.5 }}>
+          {tip.sub}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StudioScene({ artistName, genre, onAdvance }) {
   const [tab, setTab] = useState('record')
   const [isRecording, setIsRecording] = useState(false)
@@ -362,7 +534,7 @@ function StudioScene({ artistName, genre, onAdvance }) {
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
       <SceneHeader
-        act="Act III — The Studio"
+        act="Studio"
         title="Lay Down Your Track"
         subtitle="The booth is yours. Take as many takes as you need."
       />
@@ -467,10 +639,12 @@ function StudioScene({ artistName, genre, onAdvance }) {
             )}
           </div>
 
-          <p style={{ marginTop: '20px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Note: StarAlive records your vocal performance.<br />
+          <p style={{ marginTop: '20px', fontSize: '12px', color: 'var(--text-dim)', lineHeight: 1.6 }}>
+            StarAlive captures your vocal performance.<br />
             Karaoke backing tracks stream via Stingray's licensed catalog.
           </p>
+
+          <BoothTip />
         </div>
       )}
 
@@ -548,7 +722,7 @@ function StudioScene({ artistName, genre, onAdvance }) {
 
 // ─── ACT IV: ROLLOUT ─────────────────────────────────────────────────────────
 
-function RolloutScene({ artistName, genre, tracks, onAdvance }) {
+function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, onAdvance }) {
   const [activeScene, setActiveScene] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState({})
@@ -574,39 +748,26 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
     }
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-      if (!apiKey) throw new Error('No API key')
+      const vibeDescription = customVibe ? ` Artist style and appearance: ${customVibe}.` : ''
+      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription} Cinematic, professional, high quality, photorealistic.`
 
-      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}. Cinematic, professional, high quality.`
-
-      const response = await fetch('https://api.openai.com/v1/images/generations', {
+      const response = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'dall-e-3',
-          prompt,
-          n: 1,
-          size: '1024x1024',
-          quality: 'standard',
-          response_format: 'url',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
       })
 
       if (!response.ok) {
         const err = await response.json()
-        throw new Error(err.error?.message || 'Generation failed')
+        throw new Error(err.error || 'Generation failed')
       }
 
       const data = await response.json()
-      const imageUrl = data.data[0].url
-      setGenerated(g => ({ ...g, [sceneId]: imageUrl }))
+      setGenerated(g => ({ ...g, [sceneId]: data.url }))
       showNotify('🎨 Image generated — ready for your album')
 
     } catch (err) {
-      console.error('OpenAI error:', err)
+      console.error('Image error:', err)
       setGenerated(g => ({ ...g, [sceneId]: fallbacks[sceneId] }))
       showNotify('⚠️ Generation failed — showing placeholder')
     } finally {
@@ -617,7 +778,7 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
       <SceneHeader
-        act="Act IV — The Rollout"
+        act="Rollout"
         title="Build Your Visual Identity"
         subtitle="Your music is recorded. Now the world needs to see who you are."
       />
@@ -649,16 +810,23 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
               {/* Image area */}
               <div style={{
                 height: '140px',
-                background: isGenerated
-                  ? generated[scene.id]
-                  : 'var(--surface2)',
+                background: (isGenerated && generated[scene.id].startsWith('linear')) ? generated[scene.id] : 'var(--surface2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
+                overflow: 'hidden',
               }}>
+                {/* Real AI image */}
+                {isGenerated && !isLoading && generated[scene.id].startsWith('http') && (
+                  <img
+                    src={generated[scene.id]}
+                    alt={scene.label}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                  />
+                )}
                 {isLoading && (
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
                     <div style={{ width: '28px', height: '28px', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 10px' }} />
                     <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>GENERATING...</div>
                   </div>
@@ -667,7 +835,7 @@ function RolloutScene({ artistName, genre, tracks, onAdvance }) {
                   <div style={{ fontSize: '36px' }}>{scene.emoji}</div>
                 )}
                 {isGenerated && !isLoading && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--gold)', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#0a0a0a' }}>
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--gold)', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#0a0a0a', zIndex: 2 }}>
                     DONE
                   </div>
                 )}
@@ -741,7 +909,7 @@ function EraScene({ artistName, genre, tracks, generated }) {
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px' }}>
       <SceneHeader
-        act="Act V — Your Era"
+        act="Era"
         title={`Welcome to Your Era, ${artistName}`}
         subtitle="You recorded. You mixed. You created your visual identity. Now it's time to drop."
       />
@@ -868,11 +1036,190 @@ function EraScene({ artistName, genre, tracks, generated }) {
   )
 }
 
+
+// ─── ARTIST VISION SETUP ─────────────────────────────────────────────────────
+
+function VisionScene({ artistName, genre, onAdvance }) {
+  const [photo, setPhoto] = useState(null)
+  const [photoBase64, setPhotoBase64] = useState(null)
+  const [vibe, setVibe] = useState('')
+  const [dragging, setDragging] = useState(false)
+  const fileRef = useRef(null)
+
+  function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) return
+    setPhoto(URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.onload = e => {
+      // Strip the data:image/...;base64, prefix — OpenAI needs raw base64
+      const base64 = e.target.result.split(',')[1]
+      setPhotoBase64(base64)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function handleDrop(e) {
+    e.preventDefault()
+    setDragging(false)
+    handleFile(e.dataTransfer.files[0])
+  }
+
+  return (
+    <div style={{ maxWidth: '560px', margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '36px', animation: 'fadeUp 0.6s ease both' }}>
+        <div style={{ fontSize: '11px', letterSpacing: '0.35em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 500 }}>
+          Vision
+        </div>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, lineHeight: 1.1, marginBottom: '14px' }}>
+          Who Is the Artist?
+        </h1>
+        <p style={{ color: 'var(--text-dim)', fontSize: '15px', maxWidth: '420px', margin: '0 auto', lineHeight: 1.6 }}>
+          Upload a photo and describe your vibe. Every AI scene will be built around <strong style={{ color: 'var(--text)' }}>{artistName}</strong> — the real person behind the name.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeUp 0.6s 0.15s ease both', opacity: 0 }}>
+
+        {/* Photo upload */}
+        <div>
+          <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '12px', textTransform: 'uppercase' }}>
+            Artist Photo
+          </label>
+
+          <div
+            onClick={() => fileRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={handleDrop}
+            style={{
+              border: `2px dashed ${dragging ? 'var(--gold)' : photo ? 'rgba(212,175,55,0.5)' : 'rgba(212,175,55,0.2)'}`,
+              borderRadius: '8px',
+              background: dragging ? 'rgba(212,175,55,0.05)' : 'var(--surface2)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              overflow: 'hidden',
+              position: 'relative',
+              minHeight: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: photo ? '0 0 30px rgba(212,175,55,0.15)' : 'none',
+            }}
+          >
+            {photo ? (
+              <>
+                <img
+                  src={photo}
+                  alt="Artist"
+                  style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', display: 'block' }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  padding: '16px',
+                }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gold)' }}>✓ Photo loaded</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Tap to change</div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📸</div>
+                <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px' }}>
+                  {dragging ? 'Drop it here' : 'Upload your photo'}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Selfie, portrait, or any photo of the artist<br />
+                  Drag & drop or click to browse<br />
+                  <span style={{ color: 'rgba(212,175,55,0.4)', fontSize: '11px' }}>JPG, PNG, HEIC supported</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={e => handleFile(e.target.files[0])}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* Custom vibe prompt */}
+        <div>
+          <label style={{ display: 'block', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: '12px', textTransform: 'uppercase' }}>
+            Describe Your Vibe <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span>
+          </label>
+          <textarea
+            value={vibe}
+            onChange={e => setVibe(e.target.value)}
+            placeholder={`Describe ${artistName}'s style, energy, look... e.g. "wearing all black with gold chains, intense expression, dark mysterious vibe" or "soft glam, feminine, floral aesthetic, warm lighting"`}
+            rows={4}
+            style={{
+              width: '100%',
+              background: 'var(--surface2)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              borderRadius: '6px',
+              padding: '14px 16px',
+              color: 'var(--text)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              outline: 'none',
+              resize: 'vertical',
+              transition: 'border-color 0.2s',
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(212,175,55,0.2)'}
+          />
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', lineHeight: 1.5 }}>
+            The more specific you are, the more accurate your AI photos will be.
+          </div>
+        </div>
+
+        {/* Note about photo use */}
+        {photo && (
+          <div style={{
+            padding: '12px 16px',
+            background: 'rgba(212,175,55,0.06)',
+            border: '1px solid rgba(212,175,55,0.15)',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: 'var(--text-dim)',
+            lineHeight: 1.6,
+            animation: 'fadeIn 0.4s ease',
+          }}>
+            ✦ Your photo will be sent to OpenAI's image generation API to place <strong style={{ color: 'var(--text)' }}>{artistName}</strong> into each scene. Photos are not stored by StarAlive.
+          </div>
+        )}
+
+        <div style={{ paddingTop: '8px', textAlign: 'center' }}>
+          <GoldButton
+            onClick={() => onAdvance({ artistPhotoBase64: photoBase64, customVibe: vibe })}
+            size="lg"
+          >
+            {photo ? 'Build My Scenes →' : 'Skip — Use AI Persona →'}
+          </GoldButton>
+          {!photo && (
+            <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              No photo? AI will create a cinematic artist persona from your name and genre.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── PROGRESS BAR ────────────────────────────────────────────────────────────
 
 function ProgressBar({ scene }) {
-  const acts = ['audition', 'sign', 'studio', 'rollout', 'era']
-  const labels = ['Audition', 'Sign', 'Studio', 'Rollout', 'Era']
+  const acts = ['audition', 'sign', 'studio', 'vision', 'rollout', 'era']
+  const labels = ['Discovery', 'Signing', 'Studio', 'Vision', 'Rollout', 'Era']
   const current = acts.indexOf(scene)
 
   return (
@@ -943,11 +1290,14 @@ export default function App() {
     genre: '',
     tracks: [],
     generated: {},
+    artistPhoto: null,
+    artistPhotoBase64: null,
+    customVibe: '',
   })
 
   function advance(newData = {}) {
     setData(d => ({ ...d, ...newData }))
-    const flow = ['audition', 'sign', 'studio', 'rollout', 'era']
+    const flow = ['audition', 'sign', 'studio', 'vision', 'rollout', 'era']
     const next = flow[flow.indexOf(scene) + 1]
     if (next) setScene(next)
   }
@@ -1019,11 +1369,20 @@ export default function App() {
             onAdvance={advance}
           />
         )}
+        {scene === 'vision' && (
+          <VisionScene
+            artistName={data.artistName}
+            genre={data.genre}
+            onAdvance={advance}
+          />
+        )}
         {scene === 'rollout' && (
           <RolloutScene
             artistName={data.artistName}
             genre={data.genre}
             tracks={data.tracks}
+            artistPhotoBase64={data.artistPhotoBase64}
+            customVibe={data.customVibe}
             onAdvance={advance}
           />
         )}
