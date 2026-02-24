@@ -6,21 +6,23 @@ import ProStudio from './ProStudio'
 const GENRES = ['Pop', 'R&B / Soul', 'Rock', 'Hip-Hop', 'Country', 'Indie', 'Electronic', 'Worship']
 
 const AI_SCENES = [
-  { id: 'album',     emoji: '🎨', label: 'Album Cover',      desc: 'Your debut drop' },
-  { id: 'jet',       emoji: '✈️', label: 'Private Jet',       desc: 'Touring season' },
+  { id: 'album',     emoji: '🎨', label: 'Album Cover',      desc: 'Debut drop' },
+  { id: 'jet',       emoji: '✈️', label: 'Private Jet',       desc: 'Tour life' },
   { id: 'stadium',   emoji: '🏟️', label: 'Stadium Night',     desc: '80K strong' },
-  { id: 'carpet',    emoji: '🎬', label: 'Red Carpet',        desc: 'Premiere ready' },
+  { id: 'carpet',    emoji: '🎬', label: 'Red Carpet',        desc: 'Premiere night' },
   { id: 'backstage', emoji: '🌟', label: 'VIP Backstage',     desc: 'After the show' },
-  { id: 'studio',    emoji: '🎛️', label: 'Recording Studio',  desc: 'LA sessions' },
+  { id: 'studio',    emoji: '🎛️', label: 'Recording Studio',  desc: 'Back in the lab' },
+  { id: 'social',    emoji: '📱', label: 'StarAGramLive',     desc: 'Millions following' },
 ]
 
 const AI_PROMPTS = {
-  album:     "Professional music album cover art, a solo recording artist in dramatic studio lighting, front-facing portrait, dark gradient background from deep purple to black, cinematic grade, high-fashion wardrobe, platinum record aesthetic, award-winning photography, 4K render.",
-  jet:       "Interior of an ultra-luxury private jet at sunset, beige leather captain seats, champagne on side table, a music superstar relaxing post-show, city lights below through oval windows, warm golden hour light, exclusive atmosphere.",
-  stadium:   "Epic outdoor stadium concert at night, 80,000 fans with phone flashlights creating a sea of light, music superstar commanding the stage, laser beams and pyrotechnics, sold-out energy, cinematic wide shot.",
-  carpet:    "Hollywood movie premiere red carpet, celebrity arriving to paparazzi camera flashes from both sides, velvet rope entrance, glamorous fashion, entertainment industry royalty, blinding white light wall.",
-  backstage: "Luxury backstage VIP dressing room, gold star on door, fresh flowers, chilled champagne on ice, platinum records on wall, ring lights and mirrors, exclusive tour atmosphere.",
-  studio:    "World-class recording studio in Los Angeles, massive analog mixing console with glowing faders, vintage outboard gear, acoustic foam walls, a music star in the vocal booth through glass, warm amber studio lighting.",
+  album:     "Hyper-realistic professional music album cover photograph. A real touring recording artist stands front-facing under dramatic single-source spotlight, high-end fashion wardrobe, skin texture and clothing fabric rendered with photographic detail. Dark gradient from deep purple to black behind them. Billboard-quality album art. Shot on Phase One IQ4 150MP. No illustration, no cartoon.",
+  jet:       "Hyper-realistic interior photograph of a Gulfstream G700 private jet at 40,000 feet, golden hour light streaming through oval windows, a real music superstar seated in cream leather captain chair, casually dressed in luxury streetwear, champagne flute on armrest table, city lights visible far below, warm cinematic color grade. Shot by Annie Leibovitz. Photorealistic, no CGI.",
+  stadium:   "Real concert photograph, 80,000 fans filling a sold-out stadium, a music superstar standing at the edge of a massive stage, arms outstretched, pyrotechnics firing columns of fire left and right, blue and white laser grid overhead, crowd holding phone lights forming a sea of stars, documentary concert photography style. Shot on Canon EOS R3. Raw photojournalistic energy.",
+  carpet:    "Hyper-realistic red carpet photograph, a recording artist arriving at a major awards show premiere, paparazzi camera flashes creating dramatic backlit halo effect, velvet rope crowd on both sides, high-fashion outfit with intentional styling, confident commanding presence. Getty Images editorial photography quality. Real fabric, real skin, photorealistic.",
+  backstage: "Realistic backstage photograph moments after a sold-out show, a touring artist in a private green room, personal items scattered, platinum records on the wall, ring light glowing in background mirror, half-eaten catering tray, opened champagne, tour laminates hanging, lived-in real atmosphere. Tour documentary style photography.",
+  studio:    "Real recording studio session photograph, world-class Los Angeles facility, massive SSL mixing console in foreground with glowing fader lights, recording artist visible through soundproof glass in vocal booth, headphones on, eyes closed, genuinely performing, acoustic foam panels, warm amber overhead lighting, analog outboard gear rack. Behind-the-scenes album documentary photography.",
+  social:    "Hyper-realistic mockup screenshot of a StarAGramLive social media profile page on a smartphone screen. The profile shows: verified blue checkmark badge, 4.2 million followers count, 847 following, 1,203 posts. Profile photo is a professional artist headshot. Bio reads: New album dropping soon. Back in the studio. World tour announced. The post grid shows 9 square thumbnail photos in 3 rows: concert crowd shots, studio sessions, tour bus life, fashion looks, behind the scenes moments. The pinned post shows a dark moody album cover teaser with text overlay. Modern social media UI design, OLED dark mode, realistic app interface. Top post has 847K likes.",
 }
 
 // ─── SMALL SHARED COMPONENTS ─────────────────────────────────────────────────
@@ -88,6 +90,154 @@ function SceneHeader({ act, title, subtitle }) {
     </div>
   )
 }
+
+// ─── STAR ENERGY BURST ───────────────────────────────────────────────────────
+
+function StarBurst({ onDone, message = 'STAR ENERGY', subtitle = 'Level Unlocked' }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3200)
+    return () => clearTimeout(t)
+  }, [onDone])
+
+  // Two waves of particles — inner burst + outer scatter
+  const particles = Array.from({ length: 48 }, (_, i) => {
+    const angle = (i / 48) * 360 + (Math.random() * 15 - 7.5)
+    const dist = i < 24 ? (60 + Math.random() * 140) : (160 + Math.random() * 220)
+    const size = i < 24 ? (8 + Math.random() * 14) : (3 + Math.random() * 7)
+    const dur = i < 24 ? (0.7 + Math.random() * 0.5) : (1.0 + Math.random() * 0.8)
+    const delay = i < 24 ? (Math.random() * 0.2) : (0.1 + Math.random() * 0.4)
+    const rad = (angle * Math.PI) / 180
+    const tx = Math.cos(rad) * dist
+    const ty = Math.sin(rad) * dist
+    const colors = ['#FFD700', '#FFC107', '#FFFFFF', '#FFE57F', '#D4AF37']
+    const color = colors[i % colors.length]
+    return { tx, ty, size, dur, delay, i, color }
+  })
+
+  // Sparkle ring positions
+  const rings = Array.from({ length: 8 }, (_, i) => ({
+    angle: (i / 8) * 360,
+    delay: 0.15 + i * 0.06,
+    size: 16 + Math.random() * 10,
+  }))
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      pointerEvents: 'none',
+    }}>
+      {/* Full screen dramatic flash — white then gold then dark */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        animation: 'megaFlash 0.6s ease forwards',
+        background: 'rgba(255,255,255,0)',
+      }} />
+
+      {/* Radial gold sweep from center */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.35) 0%, transparent 65%)',
+        animation: 'radialPulse 1.2s ease forwards',
+      }} />
+
+      {/* Expanding rings — 3 of them */}
+      {[0, 0.2, 0.4].map((delay, ri) => (
+        <div key={ri} style={{
+          position: 'absolute',
+          width: '80px', height: '80px',
+          borderRadius: '50%',
+          border: `${2 - ri * 0.5}px solid rgba(212,175,55,${0.8 - ri * 0.2})`,
+          animation: `expandRing 1.4s ${delay}s ease forwards`,
+        }} />
+      ))}
+
+      {/* Orbiting sparkles */}
+      {rings.map((r, ri) => {
+        const rad = (r.angle * Math.PI) / 180
+        return (
+          <div key={ri} style={{
+            position: 'absolute',
+            width: `${r.size}px`, height: `${r.size}px`,
+            animation: `sparkleOrbit 1.8s ${r.delay}s ease forwards`,
+            opacity: 0,
+            '--ox': `${Math.cos(rad) * 100}px`,
+            '--oy': `${Math.sin(rad) * 100}px`,
+          }}>
+            <svg viewBox="0 0 20 20" style={{ width: '100%', height: '100%' }}>
+              <polygon points="10,0 12,8 20,8 14,13 16,20 10,15 4,20 6,13 0,8 8,8" fill="#D4AF37" opacity="0.9" />
+            </svg>
+          </div>
+        )
+      })}
+
+      {/* Particle burst */}
+      {particles.map(p => (
+        <div key={p.i} style={{
+          position: 'absolute',
+          width: `${p.size}px`, height: `${p.size}px`,
+          borderRadius: p.i % 5 === 0 ? '2px' : '50%',
+          background: p.color,
+          boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
+          animation: `particleFly${p.i} ${p.dur}s ${p.delay}s cubic-bezier(0.2,0.8,0.4,1) forwards`,
+          opacity: 1,
+        }} />
+      ))}
+
+      {/* Central achievement card */}
+      <div style={{
+        position: 'absolute',
+        textAlign: 'center',
+        animation: 'achieveCard 3s ease forwards',
+        padding: '0 20px',
+      }}>
+        {/* Star icon */}
+        <div style={{
+          fontSize: '52px',
+          animation: 'starSpin 0.8s ease forwards',
+          display: 'block',
+          marginBottom: '12px',
+          filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.9))',
+        }}>⭐</div>
+
+        <div style={{
+          fontSize: 'clamp(32px, 7vw, 56px)',
+          fontFamily: 'var(--font-display)',
+          fontWeight: 900,
+          color: '#FFD700',
+          textShadow: '0 0 30px rgba(212,175,55,1), 0 0 60px rgba(212,175,55,0.6), 0 0 100px rgba(255,215,0,0.3)',
+          letterSpacing: '0.06em',
+          lineHeight: 1,
+          marginBottom: '12px',
+        }}>
+          {message}
+        </div>
+
+        <div style={{
+          fontSize: '13px',
+          letterSpacing: '0.35em',
+          color: 'rgba(255,255,255,0.9)',
+          textTransform: 'uppercase',
+          fontWeight: 700,
+          textShadow: '0 0 20px rgba(255,255,255,0.5)',
+        }}>
+          ✦ {subtitle} ✦
+        </div>
+      </div>
+
+      <style>{[
+        '@keyframes megaFlash { 0%{opacity:0} 8%{opacity:1;background:rgba(255,255,255,0.9)} 20%{background:rgba(212,175,55,0.4)} 60%{background:rgba(212,175,55,0.1)} 100%{opacity:0;background:rgba(0,0,0,0)} }',
+        '@keyframes radialPulse { 0%{opacity:0;transform:scale(0.3)} 30%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(2.5)} }',
+        '@keyframes expandRing { 0%{transform:scale(0);opacity:1} 60%{opacity:0.6} 100%{transform:scale(18);opacity:0} }',
+        '@keyframes achieveCard { 0%{opacity:0;transform:scale(0.4)} 15%{opacity:1;transform:scale(1.08)} 25%{transform:scale(0.97)} 35%{transform:scale(1)} 75%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.15)} }',
+        '@keyframes starSpin { 0%{transform:rotate(-180deg) scale(0)} 60%{transform:rotate(10deg) scale(1.2)} 100%{transform:rotate(0deg) scale(1)} }',
+        '@keyframes sparkleOrbit { 0%{opacity:0;transform:translate(0,0) scale(0)} 20%{opacity:1;transform:translate(var(--ox),var(--oy)) scale(1.2)} 60%{opacity:0.8;transform:translate(var(--ox),var(--oy)) scale(1)} 100%{opacity:0;transform:translate(var(--ox),var(--oy)) scale(0)} }',
+        ...particles.map(p => `@keyframes particleFly${p.i} { 0%{transform:translate(0,0) scale(1.2);opacity:1} 100%{transform:translate(${p.tx}px,${p.ty}px) scale(0);opacity:0} }`),
+      ].join('\n')}</style>
+    </div>
+  )
+}
+
 
 function Notification({ message, visible }) {
   return (
@@ -474,6 +624,7 @@ function BoothTip() {
 }
 
 function StudioScene({ artistName, genre, onAdvance }) {
+  const [studioBurst, setStudioBurst] = useState(false)
   const [tab, setTab] = useState('record')
   const [isRecording, setIsRecording] = useState(false)
   const [countdown, setCountdown] = useState(null)
@@ -696,8 +847,8 @@ function StudioScene({ artistName, genre, onAdvance }) {
               ))}
 
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <GoldButton onClick={() => onAdvance({ tracks })} size="md">
-                  Take This to Rollout →
+                <GoldButton onClick={() => setStudioBurst(true)} size="md">
+                  ⭐ Take This to Rollout →
                 </GoldButton>
               </div>
             </div>
@@ -708,14 +859,12 @@ function StudioScene({ artistName, genre, onAdvance }) {
       {/* Advance from record tab if tracks exist */}
       {tab === 'record' && tracks.length > 0 && (
         <div style={{ textAlign: 'center', marginTop: '28px' }}>
-          <button
-            onClick={() => onAdvance({ tracks })}
-            style={{ color: 'var(--gold)', fontSize: '13px', letterSpacing: '0.1em', textDecoration: 'underline', background: 'none', border: 'none' }}
-          >
-            {tracks.length} track{tracks.length > 1 ? 's' : ''} saved → continue to Rollout
-          </button>
+          <GoldButton onClick={() => setStudioBurst(true)} size="md">
+            ⭐ {tracks.length} track{tracks.length > 1 ? 's' : ''} ready — Drop to Rollout
+          </GoldButton>
         </div>
       )}
+      {studioBurst && <StarBurst message="TRACK LOCKED IN" subtitle="Studio Session Complete" onDone={() => { setStudioBurst(false); onAdvance({ tracks }) }} />}
     </div>
   )
 }
@@ -725,16 +874,36 @@ function StudioScene({ artistName, genre, onAdvance }) {
 function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, onAdvance }) {
   const [activeScene, setActiveScene] = useState(null)
   const [generating, setGenerating] = useState(false)
+  // generated stores arrays: { sceneId: [url1, url2] }
   const [generated, setGenerated] = useState({})
+  // which alt is selected per scene: { sceneId: 0 or 1 }
+  const [selected, setSelected] = useState({})
   const [notify, setNotify] = useState({ visible: false, message: '' })
+  const [bursting, setBursting] = useState(false)
 
   function showNotify(msg) {
     setNotify({ visible: true, message: msg })
     setTimeout(() => setNotify({ visible: false, message: msg }), 2800)
   }
 
+  // Returns the currently-displayed URL for a scene
+  function getDisplayUrl(sceneId) {
+    const imgs = generated[sceneId]
+    if (!imgs || imgs.length === 0) return null
+    return imgs[selected[sceneId] || 0]
+  }
+
   async function generateImage(sceneId) {
-    if (generated[sceneId]) return
+    const existing = generated[sceneId] || []
+    // Already have 2 alts — cycle selection instead of generating again
+    if (existing.length >= 2) {
+      setSelected(s => ({ ...s, [sceneId]: s[sceneId] === 1 ? 0 : 1 }))
+      showNotify('🔄 Showing alternate version')
+      return
+    }
+    // Already generating this scene
+    if (generating && activeScene === sceneId) return
+
     setActiveScene(sceneId)
     setGenerating(true)
 
@@ -745,16 +914,23 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       carpet:    'linear-gradient(135deg, #1a0a0a 0%, #2e0a0a 50%, #1a1a00 100%)',
       backstage: 'linear-gradient(135deg, #0d0d0a 0%, #1a1a00 50%, #2e2e00 100%)',
       studio:    'linear-gradient(135deg, #0a1a0a 0%, #001a0a 50%, #0a2e1a 100%)',
+      social:    'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2e0a1a 100%)',
     }
+
+    // Add slight variation prompt for second generation
+    const altSuffix = existing.length === 1 ? ' Alternative composition, different angle, fresh creative take.' : ''
 
     try {
       const vibeDescription = customVibe ? ` Artist style and appearance: ${customVibe}.` : ''
-      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription} Cinematic, professional, high quality, photorealistic.`
+      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription}${altSuffix}`
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          photoBase64: artistPhotoBase64 || null,
+        }),
       })
 
       if (!response.ok) {
@@ -763,15 +939,24 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       }
 
       const data = await response.json()
-      setGenerated(g => ({ ...g, [sceneId]: data.url }))
-      showNotify('🎨 Image generated — ready for your album')
+      const newImgs = [...existing, data.url]
+      setGenerated(g => ({ ...g, [sceneId]: newImgs }))
+      // Auto-show the new image
+      setSelected(s => ({ ...s, [sceneId]: newImgs.length - 1 }))
+      const msg = existing.length === 0
+        ? '🎨 Shot 1 ready — tap again for an alternate'
+        : '🎨 Alternate ready — tap to switch between them'
+      showNotify(msg)
 
     } catch (err) {
       console.error('Image error:', err)
-      setGenerated(g => ({ ...g, [sceneId]: fallbacks[sceneId] }))
+      if (existing.length === 0) {
+        setGenerated(g => ({ ...g, [sceneId]: [fallbacks[sceneId]] }))
+      }
       showNotify('⚠️ Generation failed — showing placeholder')
     } finally {
       setGenerating(false)
+      setActiveScene(null)
     }
   }
 
@@ -792,8 +977,15 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         opacity: 0,
       }}>
         {AI_SCENES.map(scene => {
-          const isGenerated = !!generated[scene.id]
+          const imgs = generated[scene.id] || []
+          const hasAny = imgs.length > 0
+          const hasTwo = imgs.length >= 2
           const isLoading = generating && activeScene === scene.id
+          const displayUrl = getDisplayUrl(scene.id)
+          const currentAlt = selected[scene.id] || 0
+          const isRealImage = displayUrl && displayUrl.startsWith('http')
+          const isGradient = displayUrl && displayUrl.startsWith('linear')
+
           return (
             <div
               key={scene.id}
@@ -802,52 +994,69 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
                 cursor: isLoading ? 'wait' : 'pointer',
                 borderRadius: '8px',
                 overflow: 'hidden',
-                border: `1px solid ${isGenerated ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.1)'}`,
+                border: `1px solid ${hasAny ? 'rgba(212,175,55,0.45)' : 'rgba(212,175,55,0.1)'}`,
                 transition: 'all 0.2s',
                 position: 'relative',
+                boxShadow: hasAny ? '0 0 16px rgba(212,175,55,0.08)' : 'none',
               }}
             >
               {/* Image area */}
               <div style={{
                 height: '140px',
-                background: (isGenerated && generated[scene.id].startsWith('linear')) ? generated[scene.id] : 'var(--surface2)',
+                background: isGradient ? displayUrl : 'var(--surface2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 overflow: 'hidden',
               }}>
-                {/* Real AI image */}
-                {isGenerated && !isLoading && generated[scene.id].startsWith('http') && (
+                {isRealImage && (
                   <img
-                    src={generated[scene.id]}
+                    src={displayUrl}
                     alt={scene.label}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                   />
                 )}
                 {isLoading && (
-                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
                     <div style={{ width: '28px', height: '28px', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 10px' }} />
-                    <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>GENERATING...</div>
+                    <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>
+                      {imgs.length === 0 ? 'GENERATING...' : 'ALT SHOT...'}
+                    </div>
                   </div>
                 )}
-                {!isLoading && !isGenerated && (
-                  <div style={{ fontSize: '36px' }}>{scene.emoji}</div>
+                {!isLoading && !hasAny && (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '6px' }}>{scene.emoji}</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(212,175,55,0.5)', letterSpacing: '0.1em' }}>TAP TO GENERATE</div>
+                  </div>
                 )}
-                {isGenerated && !isLoading && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--gold)', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#0a0a0a', zIndex: 2 }}>
-                    DONE
+                {/* Top badges */}
+                {hasAny && !isLoading && (
+                  <div style={{ position: 'absolute', top: '8px', left: '8px', right: '8px', display: 'flex', justifyContent: 'space-between', zIndex: 2 }}>
+                    <div style={{ background: 'rgba(0,0,0,0.7)', borderRadius: '3px', padding: '2px 7px', fontSize: '9px', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.08em' }}>
+                      {hasTwo ? `${currentAlt + 1}/2` : '1/2'}
+                    </div>
+                    {!hasTwo && (
+                      <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '3px', padding: '2px 7px', fontSize: '9px', color: 'var(--gold)', letterSpacing: '0.06em' }}>
+                        TAP FOR ALT →
+                      </div>
+                    )}
+                    {hasTwo && (
+                      <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '3px', padding: '2px 7px', fontSize: '9px', color: 'var(--gold)', letterSpacing: '0.06em' }}>
+                        TAP TO SWITCH
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Label */}
-              <div style={{ padding: '12px 14px', background: 'var(--surface2)' }}>
+              <div style={{ padding: '10px 14px', background: 'var(--surface2)' }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>{scene.label}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{scene.desc}</div>
-                {!isGenerated && !isLoading && (
-                  <div style={{ fontSize: '11px', color: 'var(--gold)', marginTop: '6px', letterSpacing: '0.08em' }}>TAP TO GENERATE →</div>
-                )}
+                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                  {isLoading ? 'Generating...' : hasTwo ? `Alt ${currentAlt + 1} selected` : scene.desc}
+                </div>
               </div>
             </div>
           )
@@ -856,19 +1065,20 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
 
       <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s 0.3s ease both', opacity: 0 }}>
         <GoldButton
-          onClick={() => onAdvance({ generated })}
-          disabled={Object.keys(generated).length === 0}
+          onClick={() => setBursting(true)}
           size="lg"
+          style={{ fontSize: '18px', padding: '18px 48px', letterSpacing: '0.15em' }}
         >
-          Drop My Era →
+          ⭐ Drop My Era ⭐
         </GoldButton>
         {Object.keys(generated).length === 0 && (
-          <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
-            Generate at least one image to continue
+          <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-dim)' }}>
+            Tap a scene to generate AI imagery — or drop your Era now.
           </p>
         )}
       </div>
 
+      {bursting && <StarBurst message="DROP YOUR ERA" subtitle="The World Is Watching" onDone={() => { setBursting(false); onAdvance({ generated }) }} />}
       <Notification message={notify.message} visible={notify.visible} />
     </div>
   )
@@ -881,6 +1091,7 @@ function EraScene({ artistName, genre, tracks, generated }) {
   const [dropped, setDropped] = useState(false)
   const [shareLink, setShareLink] = useState('')
   const [notify, setNotify] = useState({ visible: false, message: '' })
+  const [bursting, setBursting] = useState(false)
 
   function showNotify(msg) {
     setNotify({ visible: true, message: msg })
@@ -1030,6 +1241,38 @@ function EraScene({ artistName, genre, tracks, generated }) {
           </div>
         )}
       </div>
+
+      {/* Generated images gallery — show what they created */}
+      {Object.keys(generated).length > 0 && (
+        <div style={{
+          animation: 'fadeUp 0.5s 0.3s ease both',
+          opacity: 0,
+          marginBottom: '24px',
+        }}>
+          <div style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600 }}>
+            Your Visual Identity
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+            gap: '8px',
+          }}>
+            {Object.entries(generated).map(([id, urls]) => {
+              const urlArr = Array.isArray(urls) ? urls : [urls]
+              const url = urlArr[0]
+              const scene = AI_SCENES.find(s => s.id === id)
+              return url && url.startsWith('http') ? (
+                <div key={id} style={{ borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
+                  <img src={url} alt={scene?.label || id} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }} />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 600, letterSpacing: '0.05em' }}>
+                    {scene?.label || id}
+                  </div>
+                </div>
+              ) : null
+            })}
+          </div>
+        </div>
+      )}
 
       <Notification message={notify.message} visible={notify.visible} />
     </div>
@@ -1193,7 +1436,7 @@ function VisionScene({ artistName, genre, onAdvance }) {
             lineHeight: 1.6,
             animation: 'fadeIn 0.4s ease',
           }}>
-            ✦ Your photo will be sent to OpenAI's image generation API to place <strong style={{ color: 'var(--text)' }}>{artistName}</strong> into each scene. Photos are not stored by StarAlive.
+            ✦ AI will analyze your photo to capture your appearance — hair, skin tone, facial features, build — then place a character matching <strong style={{ color: 'var(--text)' }}>{artistName}</strong> into each scene. Photos are not stored by StarAlive.
           </div>
         )}
 
@@ -1223,60 +1466,54 @@ function ProgressBar({ scene }) {
   const current = acts.indexOf(scene)
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0',
-      padding: '20px 24px',
-      maxWidth: '420px',
-      margin: '0 auto',
-    }}>
-      {acts.map((act, i) => (
-        <div key={act} style={{ display: 'flex', alignItems: 'center', flex: i < acts.length - 1 ? 1 : 'none' }}>
-          <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            border: `1.5px solid ${i <= current ? 'var(--gold)' : 'rgba(212,175,55,0.2)'}`,
-            background: i < current ? 'var(--gold)' : i === current ? 'rgba(212,175,55,0.15)' : 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            transition: 'all 0.4s',
-            position: 'relative',
-          }}>
-            {i < current ? (
-              <span style={{ fontSize: '11px', color: '#0a0a0a', fontWeight: 700 }}>✓</span>
-            ) : (
-              <span style={{ fontSize: '10px', color: i === current ? 'var(--gold)' : 'var(--text-muted)', fontWeight: 600 }}>{i + 1}</span>
-            )}
-            <span style={{
-              position: 'absolute',
-              top: '34px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              fontSize: '9px',
-              letterSpacing: '0.12em',
-              color: i <= current ? 'var(--gold)' : 'var(--text-muted)',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-            }}>
-              {labels[i]}
-            </span>
-          </div>
-          {i < acts.length - 1 && (
+    <div style={{ padding: '16px 20px 24px', width: '100%', maxWidth: '420px', margin: '0 auto', boxSizing: 'border-box' }}>
+      {/* Dots + connector lines — no labels on dots */}
+      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+        {acts.map((act, i) => (
+          <div key={act} style={{ display: 'flex', alignItems: 'center', flex: i < acts.length - 1 ? 1 : 'none' }}>
             <div style={{
-              flex: 1,
-              height: '1px',
-              background: i < current ? 'var(--gold)' : 'rgba(212,175,55,0.15)',
-              transition: 'background 0.4s',
-              margin: '0 2px',
-            }} />
-          )}
-        </div>
-      ))}
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              border: `1.5px solid ${i <= current ? 'var(--gold)' : 'rgba(212,175,55,0.2)'}`,
+              background: i < current ? 'var(--gold)' : i === current ? 'rgba(212,175,55,0.18)' : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'all 0.4s',
+              boxShadow: i === current ? '0 0 10px rgba(212,175,55,0.4)' : 'none',
+            }}>
+              {i < current
+                ? <span style={{ fontSize: '10px', color: '#0a0a0a', fontWeight: 800 }}>✓</span>
+                : <span style={{ fontSize: '9px', color: i === current ? 'var(--gold)' : 'rgba(212,175,55,0.35)', fontWeight: 600 }}>{i + 1}</span>
+              }
+            </div>
+            {i < acts.length - 1 && (
+              <div style={{
+                flex: 1,
+                height: '1px',
+                background: i < current ? 'var(--gold)' : 'rgba(212,175,55,0.12)',
+                transition: 'background 0.4s',
+                minWidth: '8px',
+              }} />
+            )}
+          </div>
+        ))}
+      </div>
+      {/* Current stage label — centered, clean, no overlap possible */}
+      <div style={{
+        textAlign: 'center',
+        marginTop: '8px',
+        fontSize: '9px',
+        letterSpacing: '0.25em',
+        color: 'var(--gold)',
+        textTransform: 'uppercase',
+        fontWeight: 700,
+        opacity: 0.9,
+      }}>
+        {labels[current]}
+      </div>
     </div>
   )
 }
@@ -1295,11 +1532,16 @@ export default function App() {
     customVibe: '',
   })
 
+  const [burstActive, setBurstActive] = useState(false)
+
   function advance(newData = {}) {
     setData(d => ({ ...d, ...newData }))
     const flow = ['audition', 'sign', 'studio', 'vision', 'rollout', 'era']
     const next = flow[flow.indexOf(scene) + 1]
-    if (next) setScene(next)
+    if (next) {
+      setBurstActive(true)
+      setTimeout(() => setScene(next), 600)
+    }
   }
 
   return (
@@ -1330,6 +1572,8 @@ export default function App() {
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'column',
+        width: '100%',
+        boxSizing: 'border-box',
       }}>
         <div style={{
           fontFamily: 'var(--font-display)',
@@ -1408,6 +1652,7 @@ export default function App() {
           FORCE CREATIVE AI · STARALIVE · {new Date().getFullYear()}
         </span>
       </footer>
+    {burstActive && <StarBurst onDone={() => setBurstActive(false)} />}
     </div>
   )
 }
