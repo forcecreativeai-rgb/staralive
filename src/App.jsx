@@ -13,6 +13,8 @@ const AI_SCENES = [
   { id: 'backstage', emoji: '🌟', label: 'VIP Backstage',     desc: 'After the show' },
   { id: 'studio',    emoji: '🎛️', label: 'Recording Studio',  desc: 'Back in the lab' },
   { id: 'social',    emoji: '📱', label: 'StarAGramLive',     desc: 'Millions following' },
+  { id: 'magazine',  emoji: '📰', label: 'Rock & Stone',        desc: 'Cover story' },
+  { id: 'billboard', emoji: '🏙️', label: 'Freeway Billboard',   desc: 'Sold out tour' },
 ]
 
 const AI_PROMPTS = {
@@ -23,6 +25,8 @@ const AI_PROMPTS = {
   backstage: "Realistic backstage photograph moments after a sold-out show, a touring artist in a private green room, personal items scattered, platinum records on the wall, ring light glowing in background mirror, half-eaten catering tray, opened champagne, tour laminates hanging, lived-in real atmosphere. Tour documentary style photography.",
   studio:    "Real recording studio session photograph, world-class Los Angeles facility, massive SSL mixing console in foreground with glowing fader lights, recording artist visible through soundproof glass in vocal booth, headphones on, eyes closed, genuinely performing, acoustic foam panels, warm amber overhead lighting, analog outboard gear rack. Behind-the-scenes album documentary photography.",
   social:    "Hyper-realistic mockup screenshot of a StarAGramLive social media profile page on a smartphone screen. The profile shows: verified blue checkmark badge, 4.2 million followers count, 847 following, 1,203 posts. Profile photo is a professional artist headshot. Bio reads: New album dropping soon. Back in the studio. World tour announced. The post grid shows 9 square thumbnail photos in 3 rows: concert crowd shots, studio sessions, tour bus life, fashion looks, behind the scenes moments. The pinned post shows a dark moody album cover teaser with text overlay. Modern social media UI design, OLED dark mode, realistic app interface. Top post has 847K likes.",
+  magazine:  "Hyper-realistic high-fashion music magazine cover photograph. Magazine titled ROCK AND STONE in bold serif masthead at top. A music superstar reclines luxuriously on an iconic lips-shaped sofa — oversized sculptural couch shaped like a pair of full lips, upholstered in deep plush velvet in maroon and royal purple. A white Bengal tiger lies draped across the artist's lap with calm regal presence. Flanking both sides of the couch are towering amethyst geode cathedral formations and large natural quartz crystal clusters, glowing with inner purple light. On the wall directly above the couch hangs a large ornate dreamcatcher with feathers cascading down, and centered above that is a framed mystical all-seeing eye artwork in an ornate gold frame. A single warm glowing table lamp sits centered on the floor just behind the couch, positioned so that together — lamp as nose, couch as lips, eye artwork as eye — the entire composition forms a surreal face. Dark moody editorial lighting, Helmut Newton style photography, luxury occult aesthetic, cinematic shadows. Cover lines: EXCLUSIVE INTERVIEW, WORLD TOUR ANNOUNCED, NEW ERA BEGINS.",
+  billboard: "Hyper-realistic photograph looking up at a massive freeway billboard towering above a busy downtown city intersection at golden hour. The billboard shows a dramatic concert promotion: artist name in massive bold type, tour dates listed below, a powerful performance photo of the artist on stage with dramatic lighting. Large red stamp-style text reads SOLD OUT across the image. Secondary text reads ONE NIGHT ONLY and WORLD TOUR. Bottom of billboard shows venue name and ticket outlet logos. The city below is bustling — cars, pedestrians, urban energy. Billboard is backlit and glowing against a deep orange and purple sunset sky. Los Angeles or New York City skyline visible in background. Shot from street level looking up, wide angle lens, photorealistic advertising photography.",
 }
 
 // ─── SMALL SHARED COMPONENTS ─────────────────────────────────────────────────
@@ -915,6 +919,8 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       backstage: 'linear-gradient(135deg, #0d0d0a 0%, #1a1a00 50%, #2e2e00 100%)',
       studio:    'linear-gradient(135deg, #0a1a0a 0%, #001a0a 50%, #0a2e1a 100%)',
       social:    'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2e0a1a 100%)',
+      magazine:  'linear-gradient(135deg, #1a0a2e 0%, #2e0a2e 40%, #1a0020 100%)',
+      billboard: 'linear-gradient(135deg, #1a0a00 0%, #2e1a00 40%, #0a0a1a 100%)',
     }
 
     // Add slight variation prompt for second generation
@@ -965,13 +971,13 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       <SceneHeader
         act="Rollout"
         title="Build Your Visual Identity"
-        subtitle="Your music is recorded. Now the world needs to see who you are."
+        subtitle="The master is finished. Let's get your music to the masses. (Click an image again to generate a variation.)"
       />
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-        gap: '16px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 45vw), 1fr))',
+        gap: '12px',
         marginBottom: '32px',
         animation: 'fadeUp 0.5s 0.1s ease both',
         opacity: 0,
@@ -1000,21 +1006,28 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
                 boxShadow: hasAny ? '0 0 16px rgba(212,175,55,0.08)' : 'none',
               }}
             >
-              {/* Image area */}
+              {/* Image area — square aspect ratio, full image always visible */}
               <div style={{
-                height: '140px',
-                background: isGradient ? displayUrl : 'var(--surface2)',
+                aspectRatio: '1 / 1',
+                background: isRealImage ? '#000' : isGradient ? displayUrl : 'var(--surface2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 overflow: 'hidden',
+                width: '100%',
               }}>
                 {isRealImage && (
                   <img
                     src={displayUrl}
                     alt={scene.label}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      objectPosition: 'center top',
+                      display: 'block',
+                    }}
                   />
                 )}
                 {isLoading && (
@@ -1263,7 +1276,7 @@ function EraScene({ artistName, genre, tracks, generated }) {
               const scene = AI_SCENES.find(s => s.id === id)
               return url && url.startsWith('http') ? (
                 <div key={id} style={{ borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
-                  <img src={url} alt={scene?.label || id} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }} />
+                  <img src={url} alt={scene?.label || id} style={{ width: '100%', aspectRatio: '1', objectFit: 'contain', display: 'block', background: '#000' }} />
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 600, letterSpacing: '0.05em' }}>
                     {scene?.label || id}
                   </div>
@@ -1354,7 +1367,7 @@ function VisionScene({ artistName, genre, onAdvance }) {
                 <img
                   src={photo}
                   alt="Artist"
-                  style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', display: 'block' }}
+                  style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block', background: '#111' }}
                 />
                 <div style={{
                   position: 'absolute',
