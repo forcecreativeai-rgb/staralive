@@ -940,12 +940,15 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         body: JSON.stringify({ prompt }),
       })
 
+      const responseText = await response.text()
+      let responseData
+      try { responseData = JSON.parse(responseText) } catch(e) { throw new Error(`Server error: ${responseText.slice(0, 100)}`) }
+
       if (!response.ok) {
-        const err = await response.json()
-        throw new Error(err.error || 'Generation failed')
+        throw new Error(responseData?.error || `HTTP ${response.status}`)
       }
 
-      const data = await response.json()
+      const data = responseData
       const newImgs = [...existing, data.url]
       setGenerated(g => ({ ...g, [sceneId]: newImgs }))
       // Auto-show the new image
@@ -960,7 +963,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       if (existing.length === 0) {
         setGenerated(g => ({ ...g, [sceneId]: [fallbacks[sceneId]] }))
       }
-      showNotify('⚠️ Generation failed — showing placeholder')
+      showNotify(`⚠️ ${err.message || 'Generation failed'}`)
     } finally {
       setGenerating(false)
       setActiveScene(null)
@@ -1312,27 +1315,14 @@ function VisionScene({ artistName, genre, onAdvance }) {
     setAnalyzing(true)
     let faceDescription = ''
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-      if (apiKey) {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model: 'gpt-4o',
-            max_tokens: 250,
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${photoBase64}`, detail: 'low' } },
-                { type: 'text', text: 'Describe this person\'s physical appearance for use in AI image generation. Be very specific: gender presentation, approximate age range, exact skin tone, hair color and texture and length, eye color if visible, face shape, distinctive facial features, body build. Write 3-4 sentences. This description will be used to maintain a consistent character across multiple images. Do not use the person\'s name. No identifying information — physical description only.' }
-              ]
-            }]
-          })
-        })
-        if (res.ok) {
-          const d = await res.json()
-          faceDescription = d.choices?.[0]?.message?.content || ''
-        }
+      const res = await fetch('/api/analyze-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoBase64 })
+      })
+      if (res.ok) {
+        const d = await res.json()
+        faceDescription = d.description || ''
       }
     } catch(e) { console.error('Vision analysis error:', e) }
     setAnalyzing(false)

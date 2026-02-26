@@ -4,8 +4,7 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/generate-image.js": {
-      "maxDuration": 30
-    }
+    "api/generate-image.js": { "maxDuration": 30 },
+    "api/analyze-photo.js": { "maxDuration": 20 }
   }
 }
