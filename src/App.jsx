@@ -25,7 +25,7 @@ const AI_PROMPTS = {
   backstage: "Realistic backstage photograph moments after a sold-out show, a touring artist in a private green room, personal items scattered, platinum records on the wall, ring light glowing in background mirror, half-eaten catering tray, opened champagne, tour laminates hanging, lived-in real atmosphere. Tour documentary style photography.",
   studio:    "Real recording studio session photograph, world-class Los Angeles facility, massive SSL mixing console in foreground with glowing fader lights, recording artist visible through soundproof glass in vocal booth, headphones on, eyes closed, genuinely performing, acoustic foam panels, warm amber overhead lighting, analog outboard gear rack. Behind-the-scenes album documentary photography.",
   social:    "Hyper-realistic mockup screenshot of a StarAGramLive social media profile page on a smartphone screen. The profile shows: verified blue checkmark badge, 4.2 million followers count, 847 following, 1,203 posts. Profile photo is a professional artist headshot. Bio reads: New album dropping soon. Back in the studio. World tour announced. The post grid shows 9 square thumbnail photos in 3 rows: concert crowd shots, studio sessions, tour bus life, fashion looks, behind the scenes moments. The pinned post shows a dark moody album cover teaser with text overlay. Modern social media UI design, OLED dark mode, realistic app interface. Top post has 847K likes.",
-  magazine:  "Hyper-realistic high-fashion music magazine cover photograph. Magazine titled ROCK AND STONE in bold serif masthead at top. A music superstar reclines luxuriously on an iconic lips-shaped sofa — oversized sculptural couch shaped like a pair of full lips, upholstered in deep plush velvet in maroon and royal purple. A white Bengal tiger lies draped across the artist's lap with calm regal presence. Flanking both sides of the couch are towering amethyst geode cathedral formations and large natural quartz crystal clusters, glowing with inner purple light. On the wall directly above the couch hangs a large ornate dreamcatcher with feathers cascading down, and centered above that is a framed mystical all-seeing eye artwork in an ornate gold frame. A single warm glowing table lamp sits centered on the floor just behind the couch, positioned so that together — lamp as nose, couch as lips, eye artwork as eye — the entire composition forms a surreal face. Dark moody editorial lighting, Helmut Newton style photography, luxury occult aesthetic, cinematic shadows. Cover lines: EXCLUSIVE INTERVIEW, WORLD TOUR ANNOUNCED, NEW ERA BEGINS.",
+  magazine:  "Hyper-realistic luxury music magazine cover photograph. Bold serif masthead at top reads ROCK AND STONE. A music superstar reclines confidently on a sculptural lips-shaped sofa — an oversized couch shaped like a pair of full lips, upholstered in deep plush velvet in rich maroon and royal purple tones. Flanking both sides of the couch are towering amethyst geode cathedral formations and large natural quartz crystal clusters glowing with inner violet and purple light. On the wall directly above the couch hangs a large ornate dreamcatcher with long feathers cascading down. Centered above the dreamcatcher on the wall is a framed mystical all-seeing eye artwork in an ornate gold frame. A single warm glowing table lamp sits centered just behind the couch on the floor — so that lamp base as nose, couch lips as mouth, eye artwork as eye, the entire room composition forms a surreal human face. Dark moody editorial lighting, black and white with selective purple color, Helmut Newton style fine art photography, luxury surrealist aesthetic, deep cinematic shadows. Magazine cover lines in white text: EXCLUSIVE INTERVIEW · WORLD TOUR ANNOUNCED · NEW ERA BEGINS.",
   billboard: "Hyper-realistic photograph looking up at a massive freeway billboard towering above a busy downtown city intersection at golden hour. The billboard shows a dramatic concert promotion: artist name in massive bold type, tour dates listed below, a powerful performance photo of the artist on stage with dramatic lighting. Large red stamp-style text reads SOLD OUT across the image. Secondary text reads ONE NIGHT ONLY and WORLD TOUR. Bottom of billboard shows venue name and ticket outlet logos. The city below is bustling — cars, pedestrians, urban energy. Billboard is backlit and glowing against a deep orange and purple sunset sky. Los Angeles or New York City skyline visible in background. Shot from street level looking up, wide angle lens, photorealistic advertising photography.",
 }
 
@@ -875,7 +875,7 @@ function StudioScene({ artistName, genre, onAdvance }) {
 
 // ─── ACT IV: ROLLOUT ─────────────────────────────────────────────────────────
 
-function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, onAdvance }) {
+function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, faceDescription, onAdvance }) {
   const [activeScene, setActiveScene] = useState(null)
   const [generating, setGenerating] = useState(false)
   // generated stores arrays: { sceneId: [url1, url2] }
@@ -927,8 +927,11 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
     const altSuffix = existing.length === 1 ? ' Alternative composition, different angle, fresh creative take.' : ''
 
     try {
-      const vibeDescription = customVibe ? ` Artist style and appearance: ${customVibe}.` : ''
-      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription}${altSuffix}`
+      const vibeDescription = customVibe ? ` Additional style notes: ${customVibe}.` : ''
+      const faceInsert = faceDescription
+        ? ` IMPORTANT — The artist in this scene must have these exact physical characteristics and maintain them precisely: ${faceDescription} Do not deviate from this appearance.`
+        : ''
+      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${faceInsert}${vibeDescription}${altSuffix}`
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
@@ -1300,7 +1303,43 @@ function VisionScene({ artistName, genre, onAdvance }) {
   const [photoBase64, setPhotoBase64] = useState(null)
   const [vibe, setVibe] = useState('')
   const [dragging, setDragging] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
   const fileRef = useRef(null)
+
+  async function analyzeAndAdvance() {
+    if (!photoBase64) {
+      onAdvance({ artistPhotoBase64: null, customVibe: vibe, faceDescription: '' })
+      return
+    }
+    setAnalyzing(true)
+    let faceDescription = ''
+    try {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+      if (apiKey) {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            max_tokens: 250,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${photoBase64}`, detail: 'low' } },
+                { type: 'text', text: 'Describe this person\'s physical appearance for use in AI image generation. Be very specific: gender presentation, approximate age range, exact skin tone, hair color and texture and length, eye color if visible, face shape, distinctive facial features, body build. Write 3-4 sentences. This description will be used to maintain a consistent character across multiple images. Do not use the person\'s name. No identifying information — physical description only.' }
+              ]
+            }]
+          })
+        })
+        if (res.ok) {
+          const d = await res.json()
+          faceDescription = d.choices?.[0]?.message?.content || ''
+        }
+      }
+    } catch(e) { console.error('Vision analysis error:', e) }
+    setAnalyzing(false)
+    onAdvance({ artistPhotoBase64: photoBase64, customVibe: vibe, faceDescription })
+  }
 
   function handleFile(file) {
     if (!file || !file.type.startsWith('image/')) return
@@ -1455,12 +1494,18 @@ function VisionScene({ artistName, genre, onAdvance }) {
 
         <div style={{ paddingTop: '8px', textAlign: 'center' }}>
           <GoldButton
-            onClick={() => onAdvance({ artistPhotoBase64: photoBase64, customVibe: vibe })}
+            onClick={analyzeAndAdvance}
+            disabled={analyzing}
             size="lg"
           >
-            {photo ? 'Build My Scenes →' : 'Skip — Use AI Persona →'}
+            {analyzing ? '✦ Analyzing your look...' : photo ? 'Build My Scenes →' : 'Skip — Use AI Persona →'}
           </GoldButton>
-          {!photo && (
+          {analyzing && (
+            <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--gold)' }}>
+              Reading your appearance to keep your look consistent across all scenes...
+            </p>
+          )}
+          {!photo && !analyzing && (
             <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
               No photo? AI will create a cinematic artist persona from your name and genre.
             </p>
@@ -1543,6 +1588,7 @@ export default function App() {
     artistPhoto: null,
     artistPhotoBase64: null,
     customVibe: '',
+    faceDescription: '',
   })
 
   const [burstActive, setBurstActive] = useState(false)
@@ -1640,6 +1686,7 @@ export default function App() {
             tracks={data.tracks}
             artistPhotoBase64={data.artistPhotoBase64}
             customVibe={data.customVibe}
+            faceDescription={data.faceDescription}
             onAdvance={advance}
           />
         )}
