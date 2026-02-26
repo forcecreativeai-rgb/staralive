@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'dall-e-3',
-        prompt,
+        prompt: prompt.slice(0, 3900), // DALL-E 3 max prompt is 4000 chars
         n: 1,
         size: '1024x1024',
         quality: 'standard',
@@ -29,17 +29,18 @@ export default async function handler(req, res) {
       }),
     })
 
+    const imageData = await imageResponse.json()
+
     if (!imageResponse.ok) {
-      const err = await imageResponse.json()
-      console.error('OpenAI error:', err)
-      return res.status(imageResponse.status).json({ error: err.error?.message || 'Image generation failed' })
+      console.error('DALL-E error:', JSON.stringify(imageData))
+      const msg = imageData?.error?.message || 'Image generation failed'
+      return res.status(imageResponse.status).json({ error: msg })
     }
 
-    const imageData = await imageResponse.json()
     return res.status(200).json({ url: imageData.data[0].url })
 
   } catch (err) {
-    console.error('Generate image error:', err)
+    console.error('Generate image error:', err.message)
     return res.status(500).json({ error: 'Server error: ' + err.message })
   }
 }

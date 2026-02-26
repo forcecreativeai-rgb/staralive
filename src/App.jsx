@@ -928,18 +928,16 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
 
     try {
       const vibeDescription = customVibe ? ` Additional style notes: ${customVibe}.` : ''
-      const faceInsert = faceDescription
-        ? ` IMPORTANT — The artist in this scene must have these exact physical characteristics and maintain them precisely: ${faceDescription} Do not deviate from this appearance.`
+      const faceSnippet = faceDescription ? faceDescription.slice(0, 150) : ''
+      const faceInsert = faceSnippet
+        ? ` The artist has this appearance: ${faceSnippet}.`
         : ''
       const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${faceInsert}${vibeDescription}${altSuffix}`
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          photoBase64: artistPhotoBase64 || null,
-        }),
+        body: JSON.stringify({ prompt }),
       })
 
       if (!response.ok) {
