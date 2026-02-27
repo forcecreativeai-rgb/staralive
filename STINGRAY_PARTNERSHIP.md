@@ -16,7 +16,7 @@ StarAlive turns every karaoke session into a shareable, viral artist moment — 
 
 The karaoke industry has a retention problem. Users sing a few songs and leave. There is no emotional hook that keeps them coming back, no identity layer that makes the experience feel personal, and no social sharing mechanism that creates organic growth.
 
-StarAlive solves all three — and it needs Stingray's licensed catalog to do it.
+StarAlive solves all three — and it wants to partner with Stingray's licensed catalog to do it.
 
 ### What StarAlive adds to Stingray streams:
 
@@ -43,7 +43,7 @@ StarAlive provides:
 
 1. **The performer interface** — cinematic UI that frames the experience as a professional recording session
 2. **The vocal capture** — Web Audio API microphone recording synchronized to the backing track
-3. **The AI imagery** — OpenAI generates 6 personalized rockstar scenes after every performance
+3. **The AI imagery** — OpenAI generates 9 personalized rockstar scenes after every performance, Sora video unlockable for Premium
 4. **The social layer** — shareable era link, album profile, and artist stats card
 5. **The play-log reporting** — every stream reported back to Stingray's API for royalty tracking
 
@@ -88,11 +88,11 @@ The white-label opportunity is significant as well. Force Creative AI is buildin
 
 ## About Force Creative AI
 
-Force Creative AI is an AI application company building a portfolio of products across entertainment, education, finance, wellness, and gaming. StarAlive is the flagship MVP — chosen first because it sits at the intersection of the fastest-growing consumer behaviors: identity expression, AI-generated content, and social sharing.
+Force Creative AI is an AI application company building a portfolio of products across entertainment, education, finance, wellness, and gaming. StarAlive is the flagship MVP — chosen because it sits at the intersection of the fastest-growing consumer behaviors: identity expression, AI-generated content, and social sharing.
 
-The company was founded by a 20-year entertainment industry veteran with deep experience in performance psychology and the karaoke market in Los Angeles, serving entertainment industry clients across the city.
+The company was founded by a 20-year entertainment and events industry veteran with deep experience in performance psychology and the karaoke market in Los Angeles, serving Fortune 500 and entertainment industry clients across the city.
 
-**Website:** [forcecreativeai.com](https://forcecreativeai.com)  
+**Website:** [forcecreativeai.com](https://forcecreativeai.com)
 **Live Demo:** [staralive.vercel.app](https://staralive.vercel.app)  
 **GitHub:** [github.com/forcecreativeai-rgb/staralive](https://github.com/forcecreativeai-rgb/staralive)
 
