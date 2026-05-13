@@ -89,3 +89,10 @@ input, textarea, select {
   from { width: 0; }
   to   { width: 100%; }
 }
+
+@keyframes energyGain {
+  0%   { opacity: 0; transform: translateY(0px); }
+  15%  { opacity: 1; transform: translateY(-8px); }
+  70%  { opacity: 1; transform: translateY(-16px); }
+  100% { opacity: 0; transform: translateY(-28px); }
+}

@@ -18,15 +18,57 @@ const AI_SCENES = [
 ]
 
 const AI_PROMPTS = {
-  album:     "Hyper-realistic professional music album cover photograph. A real touring recording artist stands front-facing under dramatic single-source spotlight, high-end fashion wardrobe, skin texture and clothing fabric rendered with photographic detail. Dark gradient from deep purple to black behind them. Billboard-quality album art. Shot on Phase One IQ4 150MP. No illustration, no cartoon.",
-  jet:       "Hyper-realistic interior photograph of a Gulfstream G700 private jet at 40,000 feet, golden hour light streaming through oval windows, a real music superstar seated in cream leather captain chair, casually dressed in luxury streetwear, champagne flute on armrest table, city lights visible far below, warm cinematic color grade. Shot by Annie Leibovitz. Photorealistic, no CGI.",
-  stadium:   "Real concert photograph, 80,000 fans filling a sold-out stadium, a music superstar standing at the edge of a massive stage, arms outstretched, pyrotechnics firing columns of fire left and right, blue and white laser grid overhead, crowd holding phone lights forming a sea of stars, documentary concert photography style. Shot on Canon EOS R3. Raw photojournalistic energy.",
-  carpet:    "Hyper-realistic red carpet photograph, a recording artist arriving at a major awards show premiere, paparazzi camera flashes creating dramatic backlit halo effect, velvet rope crowd on both sides, high-fashion outfit with intentional styling, confident commanding presence. Getty Images editorial photography quality. Real fabric, real skin, photorealistic.",
-  backstage: "Realistic backstage photograph moments after a sold-out show, a touring artist in a private green room, personal items scattered, platinum records on the wall, ring light glowing in background mirror, half-eaten catering tray, opened champagne, tour laminates hanging, lived-in real atmosphere. Tour documentary style photography.",
-  studio:    "Real recording studio session photograph, world-class Los Angeles facility, massive SSL mixing console in foreground with glowing fader lights, recording artist visible through soundproof glass in vocal booth, headphones on, eyes closed, genuinely performing, acoustic foam panels, warm amber overhead lighting, analog outboard gear rack. Behind-the-scenes album documentary photography.",
-  social:    "Hyper-realistic mockup screenshot of a StarAGramLive social media profile page on a smartphone screen. The profile shows: verified blue checkmark badge, 4.2 million followers count, 847 following, 1,203 posts. Profile photo is a professional artist headshot. Bio reads: New album dropping soon. Back in the studio. World tour announced. The post grid shows 9 square thumbnail photos in 3 rows: concert crowd shots, studio sessions, tour bus life, fashion looks, behind the scenes moments. The pinned post shows a dark moody album cover teaser with text overlay. Modern social media UI design, OLED dark mode, realistic app interface. Top post has 847K likes.",
-  magazine:  "Hyper-realistic luxury music magazine cover photograph. Bold serif masthead at top reads ROCK AND STONE. A music superstar reclines confidently on a sculptural lips-shaped sofa — an oversized couch shaped like a pair of full lips, upholstered in deep plush velvet in rich maroon and royal purple tones. Flanking both sides of the couch are towering amethyst geode cathedral formations and large natural quartz crystal clusters glowing with inner violet and purple light. On the wall directly above the couch hangs a large ornate dreamcatcher with long feathers cascading down. Centered above the dreamcatcher on the wall is a framed mystical all-seeing eye artwork in an ornate gold frame. A single warm glowing table lamp sits centered just behind the couch on the floor — so that lamp base as nose, couch lips as mouth, eye artwork as eye, the entire room composition forms a surreal human face. Dark moody editorial lighting, black and white with selective purple color, Helmut Newton style fine art photography, luxury surrealist aesthetic, deep cinematic shadows. Magazine cover lines in white text: EXCLUSIVE INTERVIEW · WORLD TOUR ANNOUNCED · NEW ERA BEGINS.",
-  billboard: "Hyper-realistic photograph looking up at a massive freeway billboard towering above a busy downtown city intersection at golden hour. The billboard shows a dramatic concert promotion: artist name in massive bold type, tour dates listed below, a powerful performance photo of the artist on stage with dramatic lighting. Large red stamp-style text reads SOLD OUT across the image. Secondary text reads ONE NIGHT ONLY and WORLD TOUR. Bottom of billboard shows venue name and ticket outlet logos. The city below is bustling — cars, pedestrians, urban energy. Billboard is backlit and glowing against a deep orange and purple sunset sky. Los Angeles or New York City skyline visible in background. Shot from street level looking up, wide angle lens, photorealistic advertising photography.",
+  album:     "Photorealistic music album cover. The artist stands front-facing, sharp direct eye contact with camera, single dramatic overhead spotlight creating deep shadows under cheekbones and jaw, wearing a tailored all-black outfit. Background is pure black negative space. Skin texture, pores, and hair strands rendered with medium format camera fidelity. No graphic design elements — raw portrait photography. Shot on Hasselblad H6D-100c. Ultra-sharp focus on face. Photorealistic, not illustrated.",
+  jet:       "Photorealistic candid photograph inside a Gulfstream G700 private jet. The artist is seated sideways in a cream leather captain chair, one leg crossed, looking out the oval window at a city grid 40,000 feet below during golden hour. Warm amber sunlight rakes across their face and hands. Champagne flute on the walnut side table. The artist is not posing — caught in a private moment. Leica M11 snapshot quality. Real leather texture, real light, real person.",
+  stadium:   "Photorealistic wide-angle concert photograph from stage level. The artist stands at the front lip of a massive stadium stage, back to camera, arms outstretched facing 80,000 fans whose phone flashlights create a galaxy of white dots filling every seat. Twin pyrotechnic columns fire orange-gold flames 30 feet high on both sides. Blue laser grid sweeps overhead. Shot on Canon EOS R3 with 24mm lens. Raw documentary energy — not a render, not CGI.",
+  carpet:    "Photorealistic editorial photograph on a Hollywood awards show red carpet. The artist walks directly toward the camera with total confidence — not pausing to pose. Paparazzi flashguns firing from both sides create a white halo backlight effect around their silhouette. Velvet rope and crowd blur in the background. They wear a custom suit or gown with visible fabric texture and hand-stitching. Getty Images wire photo quality. Sharp, real, present.",
+  backstage: "Photorealistic documentary photograph in a sold-out arena green room, minutes after the show. The artist sits on a couch still in their stage outfit, adrenaline visibly fading, towel around neck, sweat still on brow. Champagne bottles open on the coffee table. Platinum records on the cinder block wall. A few people in the background blurred. Ring light visible in the mirror behind them. Available light only — authentic, unposed, real moment.",
+  studio:    "Photorealistic behind-the-glass recording studio photograph. Camera is positioned in the control room shooting through the soundproof glass window into the vocal booth. The artist is leaning into a Neumann U87 microphone, eyes closed, one hand raised, headphones clamped on, genuinely performing. The SSL 9000 console fills the foreground, fader lights glowing amber. Late night — empty coffee cups, notebook with handwritten lyrics. Real room, real person, no illustration.",
+  social:    "Hyper-realistic smartphone screen mockup showing a social media profile app called StarAGramLive in dark mode. The phone screen shows: circular profile photo of a music artist, verified blue checkmark, username in bold, 4.2M followers, 847 following, bio text reading 'New album dropping · World tour announced · Back in the studio'. Below the bio are 9 square photo grid thumbnails showing concert moments, backstage, studio sessions. A pinned reel shows 847K likes. The phone itself is a modern black smartphone held in a real hand. Photorealistic product photography.",
+  magazine:  "Photorealistic luxury magazine cover. Bold serif font masthead at top reads ROCK AND STONE in white on dark background. The artist sits center frame on an enormous sculptural lips-shaped sofa — velvet upholstery in deep maroon and royal purple, the lips shape clearly visible. On both sides of the couch, floor-to-ceiling natural amethyst geode cathedrals and raw quartz crystal clusters glow purple. Above the couch on the wall: an ornate dreamcatcher with long feathers, and centered above it, a framed all-seeing eye occult artwork in a gold frame. A single lamp glows on the floor centered directly behind the couch. The composition — lamp as nose, couch as lips, eye as eye — forms a surreal face in the room. Helmut Newton editorial photography. Deep shadows. Real velvet texture.",
+  billboard: "Photorealistic street-level photograph looking up at a massive highway billboard over a downtown Los Angeles intersection at golden hour sunset. The billboard graphic shows: artist name in huge bold white type, dramatic backlit concert performance photo, red block-stamp text reading SOLD OUT, secondary text ONE NIGHT ONLY and WORLD TOUR. City traffic and pedestrians blur below. The billboard structure is weathered steel and real vinyl wrap. Orange and purple sunset sky behind it. Buildings visible on both sides. Shot on 16mm wide angle, slightly distorted perspective from below. Real city, real sign.",
+}
+
+// ─── SORA VIDEO DEFINITIONS ──────────────────────────────────────────────────
+
+const SORA_VIDEOS = [
+  { id: 'tour',    emoji: '🚌', label: 'Tour Video',     desc: 'Life on the road',    cost: 200 },
+  { id: 'hype',    emoji: '⚡', label: 'Hype Reel',      desc: 'Pure energy',         cost: 200 },
+  { id: 'mv',      emoji: '🎬', label: 'Music Video',    desc: 'Your visual story',   cost: 200 },
+  { id: 'concert', emoji: '🏟️', label: 'Live Concert',   desc: 'The crowd goes wild', cost: 200 },
+  { id: 'studio',  emoji: '🎹', label: 'Studio Session', desc: 'Behind the glass',    cost: 200 },
+  { id: 'life',    emoji: '🛥️', label: 'Lifestyle',      desc: 'The life you earned', cost: 200 },
+]
+
+const SORA_PROMPTS = {
+  tour:    "Cinematic tour documentary. A music artist's name lit in massive LED letters on the side of a tour bus pulling away from a sold-out arena at night, crowd still roaring. Camera follows from low angle, city lights blurring into bokeh. Cut to interior — artist silhouette against tinted window watching the city pass. Slow motion confetti. Anamorphic lens flares. 10 seconds.",
+  hype:    "High-energy music hype reel. Rapid cinematic cuts: artist on stage grabbing microphone as spotlight hits, crowd of 50,000 arms raised, twin pyrotechnic columns firing, confetti cannon burst, blue laser grid sweeping the arena. Artist center stage arms outstretched, entire crowd behind them as a sea of lights. Deep blacks, electric blues, hot whites. 10 seconds.",
+  mv:      "Cinematic music video scene. Artist in slow motion down an empty neon-lit city street at 2am, wearing all black, rain-slicked pavement reflecting pink and blue neon. Low fog on the ground. Camera dollies alongside. Artist pauses, turns toward camera, city lights forming a halo. Shot on 35mm film with grain and anamorphic bokeh. 10 seconds.",
+  concert: "Immersive live concert POV. Camera moves through a massive festival crowd — thousands of fans, phone lights waving. Reaches the front barrier as the artist appears center stage in a single white spotlight. Crowd erupts. Pyrotechnic burst from the stage. Camera cranes up to reveal the full stadium — rafters packed, giant LED screens, a banner dropping. 10 seconds.",
+  studio:  "Intimate late-night recording studio. Artist at a grand piano in a darkened Los Angeles studio, city lights glowing through floor-to-ceiling windows. Engineer visible through soundproof glass at an SSL mixing console. Artist leans toward the microphone, eyes closed. Warm amber lamp. Candles. Empty coffee cups. Analog tape reels turning slowly. 10 seconds.",
+  life:    "Luxury lifestyle cinematic sequence. Artist on the rear sundeck of a superyacht in the Mediterranean, golden hour light, champagne, watching the horizon. Slow drone orbit. Cut to marble interior, fresh orchids, light through a porthole. Cut to aerial of a clifftop villa, infinity pool over the sea. Aspirational, earned, quiet. 10 seconds.",
+}
+
+// ─── STAR ENERGY & COMBO DEFINITIONS ─────────────────────────────────────────
+
+const ENERGY_AWARDS = {
+  audition: 25,
+  sign:     40,
+  studio:   60,
+  vision:   30,
+  rollout:  50,
+  era:       0,
+}
+
+const MIXDOWN_COMBOS = {
+  'Rock':       ['Rock', 'Kick Ass'],
+  'Pop':        ['Pop Lead', 'Dreamy'],
+  'R&B / Soul': ['R&B / Soul', 'Cinematic'],
+  'Hip-Hop':    ['Rap / Spoken', 'Kick Ass'],
+  'Country':    ['Singer-Writer', 'Raw'],
+  'Indie':      ['Indie / Lo-Fi', 'Singer-Writer'],
+  'Electronic': ['Cinematic', 'Dreamy'],
+  'Worship':    ['Worship', 'Harmony BG'],
 }
 
 // ─── SMALL SHARED COMPONENTS ─────────────────────────────────────────────────
@@ -263,6 +305,104 @@ function Notification({ message, visible }) {
       pointerEvents: 'none',
     }}>
       {message}
+    </div>
+  )
+}
+
+// ─── STAR ENERGY DISPLAY ─────────────────────────────────────────────────────
+
+function StarEnergyDisplay({ energy, gained }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '6px',
+      background: 'rgba(212,175,55,0.08)',
+      border: '1px solid rgba(212,175,55,0.25)',
+      borderRadius: '20px', padding: '5px 12px',
+      position: 'relative', overflow: 'visible',
+    }}>
+      <span style={{ fontSize: '14px' }}>⚡</span>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.05em' }}>
+        {energy.toLocaleString()}
+      </span>
+      {gained > 0 && (
+        <span style={{
+          position: 'absolute', top: '-22px', right: '4px',
+          fontSize: '11px', color: '#4caf50', fontWeight: 700,
+          animation: 'energyGain 1.8s ease forwards', pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>+{gained} ⚡</span>
+      )}
+    </div>
+  )
+}
+
+// ─── UNLOCK BURST ─────────────────────────────────────────────────────────────
+
+function UnlockBurst({ title, subtitle, reward, colors, emoji, onDone }) {
+  useEffect(() => { const t = setTimeout(onDone, 3200); return () => clearTimeout(t) }, [])
+  const [c1, c2, c3] = colors || ['#d946ef', '#818cf8', '#38bdf8']
+  const particles = Array.from({ length: 36 }, (_, i) => ({
+    i, angle: (i / 36) * Math.PI * 2,
+    dist: 80 + Math.random() * 120, color: [c1, c2, c3][i % 3],
+    size: 4 + Math.random() * 6, delay: Math.random() * 0.3,
+  }))
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.88)' }}>
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at center, ${c1}22 0%, ${c2}11 40%, transparent 70%)`, animation: 'radialPulse 3s ease forwards' }} />
+      {particles.map(p => {
+        const tx = Math.cos(p.angle) * p.dist; const ty = Math.sin(p.angle) * p.dist
+        return <div key={p.i} style={{ position: 'absolute', width: p.size, height: p.size, borderRadius: '50%', background: p.color, top: '50%', left: '50%', marginTop: -p.size/2, marginLeft: -p.size/2, animation: `unlockP${p.i} 1.4s ${p.delay}s ease forwards`, boxShadow: `0 0 ${p.size*2}px ${p.color}` }} />
+      })}
+      <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '40px 48px', background: 'rgba(10,10,10,0.95)', border: `1px solid ${c1}55`, borderRadius: '16px', boxShadow: `0 0 60px ${c1}33`, animation: 'achieveCard 3s ease forwards', maxWidth: '320px' }}>
+        <div style={{ fontSize: '48px', marginBottom: '12px', animation: 'starSpin 0.6s ease' }}>{emoji}</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: 900, marginBottom: '8px', background: `linear-gradient(135deg, ${c1}, ${c2}, ${c3})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.05em' }}>{title}</div>
+        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', marginBottom: '20px', lineHeight: 1.5 }}>{subtitle}</div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: `${c1}18`, border: `1px solid ${c1}44`, borderRadius: '20px', padding: '8px 20px' }}>
+          <span style={{ fontSize: '18px' }}>⚡</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 900, color: c1 }}>+{reward}</span>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Star Energy</span>
+        </div>
+      </div>
+      <style>{particles.map(p => { const tx = Math.cos(p.angle)*p.dist; const ty = Math.sin(p.angle)*p.dist; return `@keyframes unlockP${p.i}{0%{transform:translate(0,0) scale(1.5);opacity:1}100%{transform:translate(${tx}px,${ty}px) scale(0);opacity:0}}` }).join(' ')}</style>
+    </div>
+  )
+}
+
+// ─── SORA VIDEO CARD ─────────────────────────────────────────────────────────
+
+function SoraVideoCard({ video, starEnergy, onGenerate, videoData }) {
+  const { id, emoji, label, desc, cost } = video
+  const status = videoData?.status || 'idle'
+  const videoUrl = videoData?.url || null
+  const canAfford = starEnergy >= cost
+  return (
+    <div onClick={() => status === 'idle' && canAfford && onGenerate(id)}
+      style={{ borderRadius: '10px', overflow: 'hidden', border: status === 'done' ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)', background: 'var(--surface2)', cursor: status === 'idle' && canAfford ? 'pointer' : 'default', position: 'relative' }}>
+      <div style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0a0a1a, #1a0a2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+        {status === 'done' && videoUrl ? (
+          <video src={videoUrl} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : status === 'pending' || status === 'queued' ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: '32px', height: '32px', border: '2px solid rgba(212,175,55,0.2)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
+            <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>{status === 'queued' ? 'QUEUED...' : 'RENDERING...'}</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>~30–90 seconds</div>
+          </div>
+        ) : status === 'failed' ? (
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', marginBottom: '6px' }}>⚠️</div><div style={{ fontSize: '11px', color: 'rgba(255,80,80,0.8)' }}>Failed — tap to retry</div></div>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>{emoji}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: canAfford ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${canAfford ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', padding: '4px 10px', fontSize: '11px', color: canAfford ? 'var(--gold)' : 'var(--text-muted)' }}>
+              <span>⚡</span><span>{cost}</span>
+            </div>
+            {!canAfford && <div style={{ fontSize: '10px', color: 'rgba(255,80,80,0.7)', marginTop: '6px' }}>Need more energy</div>}
+          </div>
+        )}
+      </div>
+      <div style={{ padding: '10px 12px' }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>{label}</div>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{desc}</div>
+        {status === 'done' && <div style={{ fontSize: '10px', color: 'var(--gold)', marginTop: '4px' }}>▶ Playing</div>}
+      </div>
     </div>
   )
 }
@@ -627,7 +767,7 @@ function BoothTip() {
   )
 }
 
-function StudioScene({ artistName, genre, onAdvance }) {
+function StudioScene({ artistName, genre, onAdvance, onMixdownCombo }) {
   const [studioBurst, setStudioBurst] = useState(false)
   const [tab, setTab] = useState('record')
   const [isRecording, setIsRecording] = useState(false)
@@ -812,7 +952,7 @@ function StudioScene({ artistName, genre, onAdvance }) {
               <p>Record a track first, then come back to mix it.</p>
             </div>
           ) : (
-            <ProStudio />
+            <ProStudio onMixdownCombo={onMixdownCombo} />
           )}
         </div>
       )}
@@ -875,22 +1015,23 @@ function StudioScene({ artistName, genre, onAdvance }) {
 
 // ─── ACT IV: ROLLOUT ─────────────────────────────────────────────────────────
 
-function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, faceDescription, onAdvance }) {
+function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, faceDescription, onAdvance, onEnergyGain, onSpendEnergy, starEnergy, onCheckVisionary, onCheckIconStatus, hasPhoto, characterRef, onSetCharacterRef }) {
   const [activeScene, setActiveScene] = useState(null)
   const [generating, setGenerating] = useState(false)
-  // generated stores arrays: { sceneId: [url1, url2] }
   const [generated, setGenerated] = useState({})
-  // which alt is selected per scene: { sceneId: 0 or 1 }
   const [selected, setSelected] = useState({})
   const [notify, setNotify] = useState({ visible: false, message: '' })
   const [bursting, setBursting] = useState(false)
+  const [videos, setVideos] = useState({})
+  const pollRefs = useRef({})
+
+  useEffect(() => { return () => Object.values(pollRefs.current).forEach(clearInterval) }, [])
 
   function showNotify(msg) {
     setNotify({ visible: true, message: msg })
     setTimeout(() => setNotify({ visible: false, message: msg }), 2800)
   }
 
-  // Returns the currently-displayed URL for a scene
   function getDisplayUrl(sceneId) {
     const imgs = generated[sceneId]
     if (!imgs || imgs.length === 0) return null
@@ -899,74 +1040,115 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
 
   async function generateImage(sceneId) {
     const existing = generated[sceneId] || []
-    // Already have 2 alts — cycle selection instead of generating again
     if (existing.length >= 2) {
       setSelected(s => ({ ...s, [sceneId]: s[sceneId] === 1 ? 0 : 1 }))
       showNotify('🔄 Showing alternate version')
       return
     }
-    // Already generating this scene
     if (generating && activeScene === sceneId) return
-
     setActiveScene(sceneId)
     setGenerating(true)
 
     const fallbacks = {
-      album:     'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-      jet:       'linear-gradient(135deg, #0d0d0d 0%, #1a1200 50%, #2d1f00 100%)',
-      stadium:   'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 40%, #2e1a00 100%)',
-      carpet:    'linear-gradient(135deg, #1a0a0a 0%, #2e0a0a 50%, #1a1a00 100%)',
+      album: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+      jet: 'linear-gradient(135deg, #0d0d0d 0%, #1a1200 50%, #2d1f00 100%)',
+      stadium: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 40%, #2e1a00 100%)',
+      carpet: 'linear-gradient(135deg, #1a0a0a 0%, #2e0a0a 50%, #1a1a00 100%)',
       backstage: 'linear-gradient(135deg, #0d0d0a 0%, #1a1a00 50%, #2e2e00 100%)',
-      studio:    'linear-gradient(135deg, #0a1a0a 0%, #001a0a 50%, #0a2e1a 100%)',
-      social:    'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2e0a1a 100%)',
-      magazine:  'linear-gradient(135deg, #1a0a2e 0%, #2e0a2e 40%, #1a0020 100%)',
+      studio: 'linear-gradient(135deg, #0a1a0a 0%, #001a0a 50%, #0a2e1a 100%)',
+      social: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2e0a1a 100%)',
+      magazine: 'linear-gradient(135deg, #1a0a2e 0%, #2e0a2e 40%, #1a0020 100%)',
       billboard: 'linear-gradient(135deg, #1a0a00 0%, #2e1a00 40%, #0a0a1a 100%)',
     }
 
-    // Add slight variation prompt for second generation
     const altSuffix = existing.length === 1 ? ' Alternative composition, different angle, fresh creative take.' : ''
 
     try {
-      const vibeDescription = customVibe ? ` Additional style notes: ${customVibe}.` : ''
-      const faceSnippet = faceDescription ? faceDescription.slice(0, 150) : ''
-      const faceInsert = faceSnippet
-        ? ` The artist has this appearance: ${faceSnippet}.`
-        : ''
-      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${faceInsert}${vibeDescription}${altSuffix}`
+      const vibeDescription = customVibe ? ` Style notes: ${customVibe}.` : ''
+      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription}${altSuffix}`
+
+      const body = { prompt }
+      if (characterRef && characterRef.startsWith('http')) {
+        body.characterRefUrl = characterRef
+      } else if (artistPhotoBase64) {
+        body.photoBase64 = artistPhotoBase64
+      }
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(body),
       })
 
       const responseText = await response.text()
       let responseData
       try { responseData = JSON.parse(responseText) } catch(e) { throw new Error(`Server error: ${responseText.slice(0, 100)}`) }
+      if (!response.ok) throw new Error(responseData?.error || `HTTP ${response.status}`)
 
-      if (!response.ok) {
-        throw new Error(responseData?.error || `HTTP ${response.status}`)
+      const newUrl = responseData.url
+      const newImgs = [...existing, newUrl]
+      setGenerated(g => ({ ...g, [sceneId]: newImgs }))
+      setSelected(s => ({ ...s, [sceneId]: newImgs.length - 1 }))
+
+      // Lock in character reference after first successful generation
+      if (!characterRef && newUrl && onSetCharacterRef) {
+        onSetCharacterRef(newUrl)
       }
 
-      const data = responseData
-      const newImgs = [...existing, data.url]
-      setGenerated(g => ({ ...g, [sceneId]: newImgs }))
-      // Auto-show the new image
-      setSelected(s => ({ ...s, [sceneId]: newImgs.length - 1 }))
+      const award = existing.length === 0 ? 15 : 8
+      if (onEnergyGain) onEnergyGain(award)
+
+      const newGenerated = { ...generated, [sceneId]: newImgs }
+      const realCount = Object.values(newGenerated).filter(arr => arr.some(u => u?.startsWith('http') || u?.startsWith('data:'))).length
+      if (onCheckVisionary) onCheckVisionary(realCount)
+      if (onCheckIconStatus) onCheckIconStatus(hasPhoto, realCount)
+
       const msg = existing.length === 0
-        ? '🎨 Shot 1 ready — tap again for an alternate'
-        : '🎨 Alternate ready — tap to switch between them'
+        ? `🎨 Shot ready — tap again for an alternate  +${award}⚡`
+        : `🎨 Alternate ready — tap to switch  +${award}⚡`
       showNotify(msg)
 
     } catch (err) {
       console.error('Image error:', err)
-      if (existing.length === 0) {
-        setGenerated(g => ({ ...g, [sceneId]: [fallbacks[sceneId]] }))
-      }
+      if (existing.length === 0) setGenerated(g => ({ ...g, [sceneId]: [fallbacks[sceneId]] }))
       showNotify(`⚠️ ${err.message || 'Generation failed'}`)
     } finally {
       setGenerating(false)
       setActiveScene(null)
+    }
+  }
+
+  async function generateVideo(videoId) {
+    if (videos[videoId]?.status === 'pending' || videos[videoId]?.status === 'queued') return
+    if (!onSpendEnergy || !onSpendEnergy(200)) { showNotify('⚡ Not enough Star Energy'); return }
+    setVideos(v => ({ ...v, [videoId]: { status: 'queued' } }))
+    const charNote = characterRef ? ' Maintain the same artist appearance as the established promotional images.' : faceDescription ? ` Artist appearance: ${faceDescription.slice(0, 100)}.` : ''
+    const prompt = `${SORA_PROMPTS[videoId]}${charNote} Genre: ${genre}.`
+    try {
+      const res = await fetch('/api/generate-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) })
+      const data = await res.json()
+      if (!res.ok || !data.jobId) throw new Error(data.error || 'Failed to start video')
+      setVideos(v => ({ ...v, [videoId]: { status: 'pending', jobId: data.jobId } }))
+      showNotify(`🎬 ${SORA_VIDEOS.find(v => v.id === videoId)?.label} rendering...`)
+      pollRefs.current[videoId] = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/generate-video?jobId=${data.jobId}`)
+          const pollData = await pollRes.json()
+          if (pollData.status === 'done') {
+            clearInterval(pollRefs.current[videoId])
+            setVideos(v => ({ ...v, [videoId]: { status: 'done', url: pollData.url } }))
+            if (onEnergyGain) onEnergyGain(50)
+            showNotify(`🎬 Video ready! +50⚡`)
+          } else if (pollData.status === 'failed') {
+            clearInterval(pollRefs.current[videoId])
+            setVideos(v => ({ ...v, [videoId]: { status: 'failed' } }))
+            showNotify(`⚠️ Video failed — tap to retry`)
+          }
+        } catch(e) { /* keep polling */ }
+      }, 5000)
+    } catch(err) {
+      setVideos(v => ({ ...v, [videoId]: { status: 'failed' } }))
+      showNotify(`⚠️ ${err.message}`)
     }
   }
 
@@ -975,8 +1157,19 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       <SceneHeader
         act="Rollout"
         title="Build Your Visual Identity"
-        subtitle="The master is finished. Let's get your music to the masses. (Click an image again to generate a variation.)"
+        subtitle={characterRef ? '✦ Character locked in — every scene will match your look' : "The master is finished. Let's get your music to the masses. (Click an image again to generate a variation.)"}
       />
+
+      {/* Character Reference Lock Badge */}
+      {characterRef && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '8px', padding: '10px 16px', marginBottom: '20px' }}>
+          <img src={characterRef} alt="Reference" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)', flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>✦ Character Reference Locked</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>Every scene generated with a consistent face and appearance</div>
+          </div>
+        </div>
+      )}
 
       <div style={{
         display: 'grid',
@@ -1080,6 +1273,22 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         })}
       </div>
 
+      {/* ── SORA AI VIDEOS ── */}
+      <div style={{ marginBottom: '32px', animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <div style={{ fontSize: '11px', letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 600 }}>🎬 Sora AI Videos</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>200⚡ each · 10 sec</div>
+        </div>
+        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '14px', lineHeight: 1.5 }}>
+          Cinematic AI video for your Era. Each video costs 200 Star Energy and renders in ~30–90 seconds.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 45vw), 1fr))', gap: '12px' }}>
+          {SORA_VIDEOS.map(video => (
+            <SoraVideoCard key={video.id} video={video} starEnergy={starEnergy || 0} videoData={videos[video.id]} onGenerate={generateVideo} />
+          ))}
+        </div>
+      </div>
+
       <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s 0.3s ease both', opacity: 0 }}>
         <GoldButton
           onClick={() => setBursting(true)}
@@ -1095,7 +1304,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         )}
       </div>
 
-      {bursting && <StarBurst message="DROP YOUR ERA" subtitle="The World Is Watching" onDone={() => { setBursting(false); onAdvance({ generated }) }} />}
+      {bursting && <StarBurst message="DROP YOUR ERA" subtitle="The World Is Watching" onDone={() => { setBursting(false); onAdvance({ generated, selectedAlts: selected }) }} />}
       <Notification message={notify.message} visible={notify.visible} />
     </div>
   )
@@ -1577,15 +1786,66 @@ export default function App() {
     artistPhotoBase64: null,
     customVibe: '',
     faceDescription: '',
+    selectedAlts: {},
+    characterRef: null,
   })
-
+  const [starEnergy, setStarEnergy] = useState(150)
+  const [energyGained, setEnergyGained] = useState(0)
   const [burstActive, setBurstActive] = useState(false)
+  const [unlock, setUnlock] = useState(null)
+  const [claimedUnlocks, setClaimedUnlocks] = useState(new Set())
+
+  function gainEnergy(amount) {
+    setStarEnergy(e => e + amount)
+    setEnergyGained(amount)
+    setTimeout(() => setEnergyGained(0), 2000)
+  }
+
+  function spendEnergy(amount) {
+    if (starEnergy < amount) return false
+    setStarEnergy(e => e - amount)
+    return true
+  }
+
+  function triggerUnlock(key, config) {
+    if (claimedUnlocks.has(key)) return
+    setClaimedUnlocks(s => new Set([...s, key]))
+    gainEnergy(config.reward)
+    setUnlock(config)
+  }
+
+  function checkMixdownCombo(presetName) {
+    const matches = MIXDOWN_COMBOS[data.genre] || []
+    if (matches.includes(presetName)) {
+      triggerUnlock(`mixdown_${data.genre}_${presetName}`, {
+        title: 'MIXDOWN BONUS', subtitle: `${presetName} is a perfect match for ${data.genre}. The studio knows what sells.`,
+        reward: 75, colors: ['#d946ef', '#818cf8', '#38bdf8'], emoji: '🎛️',
+      })
+    }
+  }
+
+  function checkVisionary(generatedCount) {
+    if (generatedCount >= 9) triggerUnlock('visionary', { title: 'VISIONARY', subtitle: 'All 9 promo shots generated. Your visual identity is complete.', reward: 200, colors: ['#d4af37', '#f0d060', '#fffbe6'], emoji: '👁️' })
+  }
+
+  function checkIconStatus(hasPhoto, generatedCount) {
+    if (hasPhoto && generatedCount >= 3) triggerUnlock('icon_status', { title: 'ICON STATUS', subtitle: 'Photo uploaded. Scenes generated. You look like a star.', reward: 150, colors: ['#ec4899', '#f472b6', '#fbcfe8'], emoji: '📸' })
+  }
+
+  useEffect(() => {
+    const today = new Date().toDateString()
+    const last = localStorage.getItem('staralive_last_visit')
+    if (last && last !== today) triggerUnlock('daily_' + today, { title: 'DAILY STREAK', subtitle: 'You came back. The studio never sleeps.', reward: 50, colors: ['#38bdf8', '#818cf8', '#6ee7b7'], emoji: '🔥' })
+    localStorage.setItem('staralive_last_visit', today)
+  }, [])
 
   function advance(newData = {}) {
     setData(d => ({ ...d, ...newData }))
     const flow = ['audition', 'sign', 'studio', 'vision', 'rollout', 'era']
     const next = flow[flow.indexOf(scene) + 1]
     if (next) {
+      const award = ENERGY_AWARDS[scene] || 0
+      if (award > 0) gainEnergy(award)
       setBurstActive(true)
       setTimeout(() => setScene(next), 600)
     }
@@ -1612,25 +1872,15 @@ export default function App() {
 
       {/* Header */}
       <header style={{
-        position: 'relative',
-        zIndex: 10,
-        padding: '20px 24px 0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        width: '100%',
-        boxSizing: 'border-box',
+        position: 'relative', zIndex: 10, padding: '20px 24px 0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexDirection: 'column', width: '100%', boxSizing: 'border-box',
       }}>
-        <div style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '22px',
-          fontWeight: 900,
-          letterSpacing: '0.08em',
-          color: 'var(--gold)',
-          marginBottom: '4px',
-        }}>
-          STAR<span style={{ color: 'var(--text-dim)' }}>AI</span>IVE
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', maxWidth: '720px', marginBottom: '4px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 900, letterSpacing: '0.08em', color: 'var(--gold)' }}>
+            STAR<span style={{ color: 'var(--text-dim)' }}>AI</span>IVE
+          </div>
+          <StarEnergyDisplay energy={starEnergy} gained={energyGained} />
         </div>
         <ProgressBar scene={scene} />
       </header>
@@ -1658,6 +1908,7 @@ export default function App() {
             artistName={data.artistName}
             genre={data.genre}
             onAdvance={advance}
+            onMixdownCombo={checkMixdownCombo}
           />
         )}
         {scene === 'vision' && (
@@ -1675,7 +1926,15 @@ export default function App() {
             artistPhotoBase64={data.artistPhotoBase64}
             customVibe={data.customVibe}
             faceDescription={data.faceDescription}
+            characterRef={data.characterRef}
+            onSetCharacterRef={ref => setData(d => ({ ...d, characterRef: ref }))}
+            starEnergy={starEnergy}
             onAdvance={advance}
+            onEnergyGain={gainEnergy}
+            onSpendEnergy={spendEnergy}
+            onCheckVisionary={checkVisionary}
+            onCheckIconStatus={checkIconStatus}
+            hasPhoto={!!data.artistPhotoBase64}
           />
         )}
         {scene === 'era' && (
@@ -1684,23 +1943,22 @@ export default function App() {
             genre={data.genre}
             tracks={data.tracks}
             generated={data.generated}
+            selectedAlts={data.selectedAlts || {}}
           />
         )}
       </main>
 
       {/* Footer */}
       <footer style={{
-        position: 'relative',
-        zIndex: 10,
-        textAlign: 'center',
-        padding: '16px',
-        borderTop: '1px solid rgba(255,255,255,0.04)',
+        position: 'relative', zIndex: 10, textAlign: 'center',
+        padding: '16px', borderTop: '1px solid rgba(255,255,255,0.04)',
       }}>
         <span style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.12em' }}>
           FORCE CREATIVE AI · STARALIVE · {new Date().getFullYear()}
         </span>
       </footer>
-    {burstActive && <StarBurst onDone={() => setBurstActive(false)} />}
+      {burstActive && <StarBurst onDone={() => setBurstActive(false)} />}
+      {unlock && <UnlockBurst {...unlock} onDone={() => setUnlock(null)} />}
     </div>
   )
 }

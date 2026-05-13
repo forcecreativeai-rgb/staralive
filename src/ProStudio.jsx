@@ -468,7 +468,7 @@ function Panel({ title, color = "#e879f9", children, compact }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ProStudio() {
+export default function ProStudio({ onMixdownCombo }) {
   const [state, setState] = useState(getDefaultState());
   const [history, setHistory] = useState([{ state: getDefaultState(), label: "Start" }]);
   const [histIdx, setHistIdx] = useState(0);
@@ -513,6 +513,7 @@ export default function ProStudio() {
   const applyPreset = preset => {
     pushHistory({ ...state, ...preset.settings }, `${preset.name}`);
     setActivePreset(preset.id);
+    if (onMixdownCombo) onMixdownCombo(preset.name);
   };
 
   const update = (key, val, label) => {
