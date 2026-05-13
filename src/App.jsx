@@ -32,12 +32,12 @@ const AI_PROMPTS = {
 // ─── SORA VIDEO DEFINITIONS ──────────────────────────────────────────────────
 
 const SORA_VIDEOS = [
-  { id: 'tour',    emoji: '🚌', label: 'Tour Video',     desc: 'Life on the road',    cost: 200 },
-  { id: 'hype',    emoji: '⚡', label: 'Hype Reel',      desc: 'Pure energy',         cost: 200 },
-  { id: 'mv',      emoji: '🎬', label: 'Music Video',    desc: 'Your visual story',   cost: 200 },
-  { id: 'concert', emoji: '🏟️', label: 'Live Concert',   desc: 'The crowd goes wild', cost: 200 },
-  { id: 'studio',  emoji: '🎹', label: 'Studio Session', desc: 'Behind the glass',    cost: 200 },
-  { id: 'life',    emoji: '🛥️', label: 'Lifestyle',      desc: 'The life you earned', cost: 200 },
+  { id: 'tour',    emoji: '🚌', label: 'Tour Video',     desc: 'Life on the road',    cost: 100 },
+  { id: 'hype',    emoji: '⚡', label: 'Hype Reel',      desc: 'Pure energy',         cost: 100 },
+  { id: 'mv',      emoji: '🎬', label: 'Music Video',    desc: 'Your visual story',   cost: 100 },
+  { id: 'concert', emoji: '🏟️', label: 'Live Concert',   desc: 'The crowd goes wild', cost: 100 },
+  { id: 'studio',  emoji: '🎹', label: 'Studio Session', desc: 'Behind the glass',    cost: 100 },
+  { id: 'life',    emoji: '🛥️', label: 'Lifestyle',      desc: 'The life you earned', cost: 100 },
 ]
 
 const SORA_PROMPTS = {
@@ -1277,10 +1277,10 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       <div style={{ marginBottom: '32px', animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
           <div style={{ fontSize: '11px', letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 600 }}>🎬 Sora AI Videos</div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>200⚡ each · 10 sec</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>100⚡ each · 10 sec</div>
         </div>
         <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '14px', lineHeight: 1.5 }}>
-          Cinematic AI video for your Era. Each video costs 200 Star Energy and renders in ~30–90 seconds.
+          Cinematic AI video for your Era. Each video costs 100 Star Energy and renders in ~30–90 seconds.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 45vw), 1fr))', gap: '12px' }}>
           {SORA_VIDEOS.map(video => (
@@ -1789,7 +1789,7 @@ export default function App() {
     selectedAlts: {},
     characterRef: null,
   })
-  const [starEnergy, setStarEnergy] = useState(150)
+  const [starEnergy, setStarEnergy] = useState(250)
   const [energyGained, setEnergyGained] = useState(0)
   const [burstActive, setBurstActive] = useState(false)
   const [unlock, setUnlock] = useState(null)
