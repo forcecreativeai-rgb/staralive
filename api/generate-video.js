@@ -20,27 +20,64 @@ export default async function handler(req, res) {
         console.error('Sora poll error:', JSON.stringify(d).slice(0, 300))
         return res.status(r.status).json({ error: d?.error?.message || 'Poll failed' })
       }
-      console.log('Sora poll status:', d.status, JSON.stringify(d).slice(0, 200))
+
+      // Log full structure so we can see the URL format
+      console.log('Sora job response:', JSON.stringify(d).slice(0, 800))
 
       if (d.status === 'completed') {
-        // Fetch the actual video content URL
-        const contentRes = await fetch(`https://api.openai.com/v1/videos/${jobId}/content`, {
-          headers: { 'Authorization': `Bearer ${apiKey}` }
-        })
-        if (contentRes.ok) {
-          // Returns a redirect to the actual MP4 URL
-          const videoUrl = contentRes.url || d?.data?.[0]?.url || null
-          return res.status(200).json({ status: 'done', url: videoUrl })
+        // Try every possible URL location in the response
+        let videoUrl = d?.data?.[0]?.url
+          || d?.generations?.[0]?.url
+          || d?.result?.url
+          || d?.output?.[0]?.url
+          || d?.url
+          || null
+
+        // If still no URL, call the content endpoint to get the MP4 stream URL
+        if (!videoUrl) {
+          try {
+            // Use no-redirect first to get the Location header
+            const contentRes = await fetch(
+              `https://api.openai.com/v1/videos/${jobId}/content`,
+              {
+                headers: { 'Authorization': `Bearer ${apiKey}` },
+                redirect: 'manual', // Don't follow redirect — capture Location header
+              }
+            )
+            console.log('Content status:', contentRes.status)
+            console.log('Content headers:', JSON.stringify([...contentRes.headers.entries()]))
+
+            // 302 redirect — Location header has the actual MP4 URL
+            if (contentRes.status === 302 || contentRes.status === 301) {
+              videoUrl = contentRes.headers.get('location')
+            } else if (contentRes.ok) {
+              // Might return JSON with URL inside
+              const ct = contentRes.headers.get('content-type') || ''
+              if (ct.includes('application/json')) {
+                const cd = await contentRes.json()
+                videoUrl = cd?.url || cd?.data?.[0]?.url || null
+              } else {
+                // It's the actual video binary — we can't return this directly
+                // Return the URL we used to fetch it as a proxy
+                videoUrl = `https://api.openai.com/v1/videos/${jobId}/content`
+              }
+            }
+          } catch (e) {
+            console.warn('Content fetch error:', e.message)
+          }
         }
-        // Fallback: try to get URL from the job object itself
-        const url = d?.data?.[0]?.url || d?.url || null
-        return res.status(200).json({ status: 'done', url })
+
+        console.log('Returning video URL:', videoUrl)
+        return res.status(200).json({ status: 'done', url: videoUrl })
       }
+
       if (d.status === 'failed') {
         return res.status(200).json({ status: 'failed', error: d?.error?.message || 'Generation failed' })
       }
+
       // queued, running, processing
       return res.status(200).json({ status: 'pending', jobStatus: d.status })
+
     } catch (err) {
       return res.status(500).json({ error: 'Poll error: ' + err.message })
     }
@@ -55,9 +92,8 @@ export default async function handler(req, res) {
         model: 'sora-2',
         prompt: prompt.slice(0, 2000),
         size: '1280x720',
-        seconds: '12',        // must be string: '4', '8', or '12'
+        seconds: '12',
       }
-      console.log('Sora create request:', JSON.stringify(body).slice(0, 200))
       const r = await fetch('https://api.openai.com/v1/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
