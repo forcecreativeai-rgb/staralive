@@ -6,6 +6,6 @@
   "functions": {
     "api/generate-image.js":  { "maxDuration": 60 },
     "api/analyze-photo.js":   { "maxDuration": 20 },
-    "api/generate-video.js":  { "maxDuration": 60 }
+    "api/generate-video.js":  { "maxDuration": 300 }
   }
 }

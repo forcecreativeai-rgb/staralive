@@ -1,3 +1,6 @@
+// Sora 2 video generation — async polling + authenticated proxy stream
+// Cost: seconds='4' = ~$0.80, seconds='8' = ~$1.60, seconds='12' = ~$2.40
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
@@ -7,105 +10,114 @@ export default async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' })
 
-  // POLL: GET /api/generate-video?jobId=xxx
-  if (req.method === 'GET') {
+  // ── PROXY STREAM: GET /api/generate-video?stream=video_id
+  // Browser <video> tags can't send auth headers — we proxy through here
+  if (req.method === 'GET' && req.query.stream) {
+    const videoId = req.query.stream
+    try {
+      const videoRes = await fetch(
+        `https://api.openai.com/v1/videos/${videoId}/content`,
+        { headers: { 'Authorization': `Bearer ${apiKey}` } }
+      )
+      if (!videoRes.ok) {
+        return res.status(videoRes.status).json({ error: 'Video stream failed' })
+      }
+      const contentType = videoRes.headers.get('content-type') || 'video/mp4'
+      res.setHeader('Content-Type', contentType)
+      res.setHeader('Cache-Control', 'public, max-age=3600')
+      res.setHeader('Accept-Ranges', 'bytes')
+      // Stream chunks back to browser
+      const reader = videoRes.body.getReader()
+      const pump = async () => {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          res.write(Buffer.from(value))
+        }
+        res.end()
+      }
+      await pump()
+      return
+    } catch (err) {
+      console.error('Stream error:', err.message)
+      return res.status(500).json({ error: 'Stream error: ' + err.message })
+    }
+  }
+
+  // ── POLL STATUS: GET /api/generate-video?jobId=xxx
+  if (req.method === 'GET' && req.query.jobId) {
     const { jobId } = req.query
-    if (!jobId) return res.status(400).json({ error: 'jobId required' })
     try {
       const r = await fetch(`https://api.openai.com/v1/videos/${jobId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
       })
       const d = await r.json()
       if (!r.ok) {
-        console.error('Sora poll error:', JSON.stringify(d).slice(0, 300))
+        console.error('Sora poll error:', JSON.stringify(d).slice(0, 200))
         return res.status(r.status).json({ error: d?.error?.message || 'Poll failed' })
       }
 
-      // Log full structure so we can see the URL format
-      console.log('Sora job response:', JSON.stringify(d).slice(0, 800))
+      const status = d.status // queued | in_progress | completed | failed
+      const progress = d.progress || 0
+      console.log(`Sora ${jobId}: ${status} ${progress}%`)
 
-      if (d.status === 'completed') {
-        // Try every possible URL location in the response
-        let videoUrl = d?.data?.[0]?.url
-          || d?.generations?.[0]?.url
-          || d?.result?.url
-          || d?.output?.[0]?.url
-          || d?.url
-          || null
-
-        // If still no URL, call the content endpoint to get the MP4 stream URL
-        if (!videoUrl) {
-          try {
-            // Use no-redirect first to get the Location header
-            const contentRes = await fetch(
-              `https://api.openai.com/v1/videos/${jobId}/content`,
-              {
-                headers: { 'Authorization': `Bearer ${apiKey}` },
-                redirect: 'manual', // Don't follow redirect — capture Location header
-              }
-            )
-            console.log('Content status:', contentRes.status)
-            console.log('Content headers:', JSON.stringify([...contentRes.headers.entries()]))
-
-            // 302 redirect — Location header has the actual MP4 URL
-            if (contentRes.status === 302 || contentRes.status === 301) {
-              videoUrl = contentRes.headers.get('location')
-            } else if (contentRes.ok) {
-              // Might return JSON with URL inside
-              const ct = contentRes.headers.get('content-type') || ''
-              if (ct.includes('application/json')) {
-                const cd = await contentRes.json()
-                videoUrl = cd?.url || cd?.data?.[0]?.url || null
-              } else {
-                // It's the actual video binary — we can't return this directly
-                // Return the URL we used to fetch it as a proxy
-                videoUrl = `https://api.openai.com/v1/videos/${jobId}/content`
-              }
-            }
-          } catch (e) {
-            console.warn('Content fetch error:', e.message)
-          }
-        }
-
-        console.log('Returning video URL:', videoUrl)
-        return res.status(200).json({ status: 'done', url: videoUrl })
+      if (status === 'completed') {
+        // Return a proxied URL — browser plays this without needing auth headers
+        const proxyUrl = `/api/generate-video?stream=${jobId}`
+        return res.status(200).json({ status: 'done', url: proxyUrl, progress: 100 })
       }
 
-      if (d.status === 'failed') {
-        return res.status(200).json({ status: 'failed', error: d?.error?.message || 'Generation failed' })
+      if (status === 'failed') {
+        const errMsg = d?.error?.message || 'Generation failed'
+        const isPolicy = errMsg.toLowerCase().includes('safety') || errMsg.toLowerCase().includes('policy') || errMsg.toLowerCase().includes('content')
+        return res.status(200).json({
+          status: 'failed',
+          error: errMsg,
+          isPolicy,
+        })
       }
 
-      // queued, running, processing
-      return res.status(200).json({ status: 'pending', jobStatus: d.status })
+      // Still running — return progress
+      return res.status(200).json({ status: 'pending', progress })
 
     } catch (err) {
       return res.status(500).json({ error: 'Poll error: ' + err.message })
     }
   }
 
-  // CREATE: POST /api/generate-video
+  // ── CREATE VIDEO: POST /api/generate-video
   if (req.method === 'POST') {
-    const { prompt } = req.body
+    const { prompt, testMode } = req.body
     if (!prompt) return res.status(400).json({ error: 'Prompt required' })
+
+    // testMode=true uses 4s clips ($0.80) — set to false for investor demo (12s = $2.40)
+    const duration = testMode ? '4' : '8'
+
     try {
-      const body = {
-        model: 'sora-2',
-        prompt: prompt.slice(0, 2000),
-        size: '1280x720',
-        seconds: '12',
-      }
       const r = await fetch('https://api.openai.com/v1/videos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'sora-2',
+          prompt: prompt.slice(0, 2000),
+          size: '1280x720',
+          seconds: duration,
+        }),
       })
       const d = await r.json()
       if (!r.ok) {
         console.error('Sora create error:', JSON.stringify(d).slice(0, 300))
-        return res.status(r.status).json({ error: d?.error?.message || 'Video creation failed' })
+        const isPolicy = d?.error?.message?.toLowerCase().includes('safety') || d?.error?.message?.toLowerCase().includes('policy')
+        return res.status(r.status).json({
+          error: d?.error?.message || 'Video creation failed',
+          isPolicy,
+        })
       }
       const jobId = d?.id || d?.job_id
-      console.log('Sora job created:', jobId, 'status:', d?.status)
+      console.log('Sora job created:', jobId, 'duration:', duration + 's')
       return res.status(200).json({ jobId, status: 'queued' })
     } catch (err) {
       console.error('Sora error:', err.message)

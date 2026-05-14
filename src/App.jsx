@@ -1223,9 +1223,17 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
     const charNote = characterRef ? ' Maintain the same artist appearance as the established promotional images.' : faceDescription ? ` The artist has this appearance: ${faceDescription.slice(0, 100)}.` : ''
     const prompt = `${SORA_PROMPTS[videoId]}${charNote} Genre: ${genre}. Do not reference any real artists, song titles, or copyrighted material.`
     try {
-      const res = await fetch('/api/generate-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) })
+      const res = await fetch('/api/generate-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, testMode: true }) }) // testMode=true uses 4s clips. Change to false for investor demo.
       const data = await res.json()
-      if (!res.ok || !data.jobId) throw new Error(data.error || 'Failed to start video')
+      if (!res.ok || !data.jobId) {
+        setVideos(v => ({ ...v, [videoId]: { status: 'idle' } }))
+        if (onEnergyGain) onEnergyGain(100) // refund if creation fails
+        const isBlocked = data.isPolicy || data.error?.toLowerCase().includes('safety') || data.error?.toLowerCase().includes('policy')
+        showNotify(isBlocked
+          ? '⚠️ Video blocked at creation — energy refunded. Try adjusting your vibe description.'
+          : `⚠️ ${data.error || 'Failed to start video — tap to retry'}`)
+        return
+      }
       setVideos(v => ({ ...v, [videoId]: { status: 'pending', jobId: data.jobId } }))
       showNotify(`🎬 ${SORA_VIDEOS.find(v => v.id === videoId)?.label} rendering...`)
       pollRefs.current[videoId] = setInterval(async () => {
@@ -1234,20 +1242,19 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
           const pollData = await pollRes.json()
           if (pollData.status === 'done') {
             clearInterval(pollRefs.current[videoId])
+            delete pollRefs.current[videoId]
             setVideos(v => ({ ...v, [videoId]: { status: 'done', url: pollData.url } }))
             if (onEnergyGain) onEnergyGain(50)
             showNotify(`🎬 Video ready! Tap to watch  +50⚡`)
           } else if (pollData.status === 'failed') {
             clearInterval(pollRefs.current[videoId])
-            const isBlocked = pollData.error?.toLowerCase().includes('safety')
-              || pollData.error?.toLowerCase().includes('moderation')
-              || pollData.error?.toLowerCase().includes('policy')
+            delete pollRefs.current[videoId]
+            const isBlocked = pollData.isPolicy || pollData.error?.toLowerCase().includes('safety') || pollData.error?.toLowerCase().includes('policy')
             setVideos(v => ({ ...v, [videoId]: { status: 'idle' } }))
-            if (onEnergyGain) onEnergyGain(100)
-            const failMsg = isBlocked
-              ? '⚠️ Video blocked by AI safety filters — energy refunded. Your artist name or vibe description may have triggered a flag. Try adjusting your vibe.'
-              : '⚠️ Video failed — energy refunded. Tap to retry.'
-            showNotify(failMsg)
+            if (onEnergyGain) onEnergyGain(100) // full refund on failure
+            showNotify(isBlocked
+              ? '⚠️ Video blocked — AI safety filter. Energy refunded. Try adjusting your vibe description.'
+              : '⚠️ Video failed — energy refunded. Tap to retry.')
           } else {
             // Update progress
             setVideos(v => ({ ...v, [videoId]: { ...v[videoId], progress: pollData.progress || 0 } }))
