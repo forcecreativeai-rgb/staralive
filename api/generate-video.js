@@ -55,7 +55,7 @@ export default async function handler(req, res) {
         model: 'sora-2',
         prompt: prompt.slice(0, 2000),
         size: '1280x720',
-        seconds: 10,          // correct param name per OpenAI docs
+        seconds: '12',        // must be string: '4', '8', or '12'
       }
       console.log('Sora create request:', JSON.stringify(body).slice(0, 200))
       const r = await fetch('https://api.openai.com/v1/videos', {
