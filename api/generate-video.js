@@ -37,7 +37,6 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: 'sora-2',
           prompt: prompt.slice(0, 2000),
-          n: 1,
           size: '1280x720',
           duration: 10,
         }),

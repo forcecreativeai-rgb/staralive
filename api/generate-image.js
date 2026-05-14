@@ -79,7 +79,7 @@ export default async function handler(req, res) {
           prompt: prompt.slice(0, 3500),
           n: 1,
           size: '1024x1024',
-          quality: 'standard',
+          quality: 'high',
         }),
       })
       const genData = await genRes.json()
