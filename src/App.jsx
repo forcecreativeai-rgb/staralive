@@ -1068,7 +1068,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription}${altSuffix}`
 
       const body = { prompt }
-      if (characterRef && characterRef.startsWith('http')) {
+      if (characterRef && (characterRef.startsWith('http') || characterRef.startsWith('data:'))) {
         body.characterRefUrl = characterRef
       } else if (artistPhotoBase64) {
         body.photoBase64 = artistPhotoBase64
@@ -1141,8 +1141,9 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
             showNotify(`🎬 Video ready! +50⚡`)
           } else if (pollData.status === 'failed') {
             clearInterval(pollRefs.current[videoId])
-            setVideos(v => ({ ...v, [videoId]: { status: 'failed' } }))
-            showNotify(`⚠️ Video failed — tap to retry`)
+            setVideos(v => ({ ...v, [videoId]: { status: 'idle' } }))
+            if (onEnergyGain) onEnergyGain(100) // refund on failure
+            showNotify(`⚠️ Video failed — energy refunded, tap to retry`)
           }
         } catch(e) { /* keep polling */ }
       }, 5000)
@@ -1186,7 +1187,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
           const isLoading = generating && activeScene === scene.id
           const displayUrl = getDisplayUrl(scene.id)
           const currentAlt = selected[scene.id] || 0
-          const isRealImage = displayUrl && displayUrl.startsWith('http')
+          const isRealImage = displayUrl && (displayUrl.startsWith('http') || displayUrl.startsWith('data:'))
           const isGradient = displayUrl && displayUrl.startsWith('linear')
 
           return (
@@ -1487,7 +1488,7 @@ function EraScene({ artistName, genre, tracks, generated }) {
               const urlArr = Array.isArray(urls) ? urls : [urls]
               const url = urlArr[0]
               const scene = AI_SCENES.find(s => s.id === id)
-              return url && url.startsWith('http') ? (
+              return url && (url.startsWith('http') || url.startsWith('data:')) ? (
                 <div key={id} style={{ borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
                   <img src={url} alt={scene?.label || id} style={{ width: '100%', aspectRatio: '1', objectFit: 'contain', display: 'block', background: '#000' }} />
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 600, letterSpacing: '0.05em' }}>
