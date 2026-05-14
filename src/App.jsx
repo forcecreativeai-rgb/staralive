@@ -369,25 +369,55 @@ function UnlockBurst({ title, subtitle, reward, colors, emoji, onDone }) {
 
 // ─── SORA VIDEO CARD ─────────────────────────────────────────────────────────
 
-function SoraVideoCard({ video, starEnergy, onGenerate, videoData }) {
+function SoraVideoCard({ video, starEnergy, onGenerate, videoData, onWatch }) {
   const { id, emoji, label, desc, cost } = video
   const status = videoData?.status || 'idle'
   const videoUrl = videoData?.url || null
+  const progress = videoData?.progress || 0
   const canAfford = starEnergy >= cost
+
+  function handleClick() {
+    if (status === 'done' && videoUrl) { onWatch({ id, url: videoUrl, label }); return }
+    if (status === 'idle' && canAfford) { onGenerate(id); return }
+  }
+
   return (
-    <div onClick={() => status === 'idle' && canAfford && onGenerate(id)}
-      style={{ borderRadius: '10px', overflow: 'hidden', border: status === 'done' ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)', background: 'var(--surface2)', cursor: status === 'idle' && canAfford ? 'pointer' : 'default', position: 'relative' }}>
+    <div onClick={handleClick}
+      style={{
+        borderRadius: '10px', overflow: 'hidden',
+        border: status === 'done' ? '2px solid rgba(212,175,55,0.6)' : '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface2)',
+        cursor: (status === 'idle' && canAfford) || status === 'done' ? 'pointer' : 'default',
+        position: 'relative',
+        transition: 'border-color 0.3s, transform 0.2s',
+        transform: status === 'done' ? 'scale(1.01)' : 'scale(1)',
+      }}>
+
+      {/* Thumbnail / status area */}
       <div style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0a0a1a, #1a0a2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-        {status === 'done' && videoUrl ? (
-          <video src={videoUrl} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : status === 'pending' || status === 'queued' ? (
+
+        {status === 'done' ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '32px', height: '32px', border: '2px solid rgba(212,175,55,0.2)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
-            <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em' }}>{status === 'queued' ? 'QUEUED...' : 'RENDERING...'}</div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>~30–90 seconds</div>
+            <div style={{ fontSize: '40px', marginBottom: '8px', filter: 'drop-shadow(0 0 12px rgba(212,175,55,0.8))' }}>▶</div>
+            <div style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: 700, letterSpacing: '0.1em' }}>TAP TO WATCH</div>
+          </div>
+        ) : status === 'pending' || status === 'queued' ? (
+          <div style={{ textAlign: 'center', padding: '0 16px', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ width: '28px', height: '28px', border: '2px solid rgba(212,175,55,0.2)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
+            <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.1em', marginBottom: '8px' }}>
+              {status === 'queued' ? 'QUEUED — STARTING...' : `RENDERING ${progress}%`}
+            </div>
+            {/* Progress bar */}
+            <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${progress}%`, background: 'var(--gold)', borderRadius: '2px', transition: 'width 0.5s ease' }} />
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>~60–90 sec · Sora AI</div>
           </div>
         ) : status === 'failed' ? (
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', marginBottom: '6px' }}>⚠️</div><div style={{ fontSize: '11px', color: 'rgba(255,80,80,0.8)' }}>Failed — tap to retry</div></div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '24px', marginBottom: '6px' }}>⚠️</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,80,80,0.8)' }}>Failed — energy refunded</div>
+          </div>
         ) : (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>{emoji}</div>
@@ -398,10 +428,64 @@ function SoraVideoCard({ video, starEnergy, onGenerate, videoData }) {
           </div>
         )}
       </div>
+
+      {/* Label */}
       <div style={{ padding: '10px 12px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>{label}</div>
-        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{desc}</div>
-        {status === 'done' && <div style={{ fontSize: '10px', color: 'var(--gold)', marginTop: '4px' }}>▶ Playing</div>}
+        <div style={{ fontSize: '11px', color: status === 'done' ? 'var(--gold)' : 'var(--text-muted)' }}>
+          {status === 'done' ? '✦ Ready to watch' : desc}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── VIDEO PLAYER OVERLAY ────────────────────────────────────────────────────
+
+function VideoPlayer({ videoId, url, label, onClose }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 500,
+      background: '#000',
+      display: 'flex', flexDirection: 'column',
+      animation: 'fadeIn 0.3s ease',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 20px',
+        background: 'rgba(0,0,0,0.8)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <div>
+          <div style={{ fontSize: '10px', color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '2px' }}>Sora AI · StarAlive</div>
+          <div style={{ fontSize: '16px', fontWeight: 700 }}>{label}</div>
+        </div>
+        <button
+          onClick={onClose}
+          style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '36px', height: '36px', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >✕</button>
+      </div>
+
+      {/* Video */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+        <video
+          src={url}
+          controls
+          autoPlay
+          loop
+          playsInline
+          style={{ maxWidth: '100%', maxHeight: '100%', width: '100%' }}
+        />
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '12px 20px', textAlign: 'center',
+        fontSize: '11px', color: 'var(--text-muted)',
+        background: 'rgba(0,0,0,0.8)',
+      }}>
+        Generated by Sora 2 · Force Creative AI · StarAlive 2026
       </div>
     </div>
   )
@@ -1024,6 +1108,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
   const [bursting, setBursting] = useState(false)
   const [videos, setVideos] = useState({})
   const pollRefs = useRef({})
+  const [activeVideo, setActiveVideo] = useState(null) // { id, url, label } for fullscreen player
 
   useEffect(() => { return () => Object.values(pollRefs.current).forEach(clearInterval) }, [])
 
@@ -1065,7 +1150,9 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
 
     try {
       const vibeDescription = customVibe ? ` Style notes: ${customVibe}.` : ''
-      const prompt = `${AI_PROMPTS[sceneId]} The artist is a ${genre} musician named ${artistName}.${vibeDescription}${altSuffix}`
+      // Never include artist name in prompts — avoids copyright/safety flags
+      // Use genre, vibe, and face description only
+      const prompt = `${AI_PROMPTS[sceneId]} A ${genre} recording artist.${vibeDescription}${altSuffix}`
 
       const body = { prompt }
       if (characterRef && (characterRef.startsWith('http') || characterRef.startsWith('data:'))) {
@@ -1083,7 +1170,14 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
       const responseText = await response.text()
       let responseData
       try { responseData = JSON.parse(responseText) } catch(e) { throw new Error(`Server error: ${responseText.slice(0, 100)}`) }
-      if (!response.ok) throw new Error(responseData?.error || `HTTP ${response.status}`)
+      if (!response.ok) {
+        const errMsg = responseData?.error || `HTTP ${response.status}`
+        // Surface friendly message for safety blocks
+        if (errMsg.toLowerCase().includes('safety') || errMsg.toLowerCase().includes('moderation') || errMsg.toLowerCase().includes('rejected') || errMsg.toLowerCase().includes('blocked')) {
+          throw new Error('safety_blocked')
+        }
+        throw new Error(errMsg)
+      }
 
       const newUrl = responseData.url
       const newImgs = [...existing, newUrl]
@@ -1111,7 +1205,10 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
     } catch (err) {
       console.error('Image error:', err)
       if (existing.length === 0) setGenerated(g => ({ ...g, [sceneId]: [fallbacks[sceneId]] }))
-      showNotify(`⚠️ ${err.message || 'Generation failed'}`)
+      const msg = err.message === 'safety_blocked' || err.message?.toLowerCase().includes('safety') || err.message?.toLowerCase().includes('moderation') || err.message?.toLowerCase().includes('rejected')
+        ? '⚠️ Scene blocked by AI safety filters. Try adjusting your vibe description in the Vision stage.'
+        : `⚠️ ${err.message || 'Generation failed — tap to retry'}`
+      showNotify(msg)
     } finally {
       setGenerating(false)
       setActiveScene(null)
@@ -1122,8 +1219,9 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
     if (videos[videoId]?.status === 'pending' || videos[videoId]?.status === 'queued') return
     if (!onSpendEnergy || !onSpendEnergy(200)) { showNotify('⚡ Not enough Star Energy'); return }
     setVideos(v => ({ ...v, [videoId]: { status: 'queued' } }))
-    const charNote = characterRef ? ' Maintain the same artist appearance as the established promotional images.' : faceDescription ? ` Artist appearance: ${faceDescription.slice(0, 100)}.` : ''
-    const prompt = `${SORA_PROMPTS[videoId]}${charNote} Genre: ${genre}.`
+    // Never include artist name — avoids copyright/safety flags on Sora
+    const charNote = characterRef ? ' Maintain the same artist appearance as the established promotional images.' : faceDescription ? ` The artist has this appearance: ${faceDescription.slice(0, 100)}.` : ''
+    const prompt = `${SORA_PROMPTS[videoId]}${charNote} Genre: ${genre}. Do not reference any real artists, song titles, or copyrighted material.`
     try {
       const res = await fetch('/api/generate-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) })
       const data = await res.json()
@@ -1138,12 +1236,21 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
             clearInterval(pollRefs.current[videoId])
             setVideos(v => ({ ...v, [videoId]: { status: 'done', url: pollData.url } }))
             if (onEnergyGain) onEnergyGain(50)
-            showNotify(`🎬 Video ready! +50⚡`)
+            showNotify(`🎬 Video ready! Tap to watch  +50⚡`)
           } else if (pollData.status === 'failed') {
             clearInterval(pollRefs.current[videoId])
+            const isBlocked = pollData.error?.toLowerCase().includes('safety')
+              || pollData.error?.toLowerCase().includes('moderation')
+              || pollData.error?.toLowerCase().includes('policy')
             setVideos(v => ({ ...v, [videoId]: { status: 'idle' } }))
-            if (onEnergyGain) onEnergyGain(100) // refund on failure
-            showNotify(`⚠️ Video failed — energy refunded, tap to retry`)
+            if (onEnergyGain) onEnergyGain(100)
+            const failMsg = isBlocked
+              ? '⚠️ Video blocked by AI safety filters — energy refunded. Your artist name or vibe description may have triggered a flag. Try adjusting your vibe.'
+              : '⚠️ Video failed — energy refunded. Tap to retry.'
+            showNotify(failMsg)
+          } else {
+            // Update progress
+            setVideos(v => ({ ...v, [videoId]: { ...v[videoId], progress: pollData.progress || 0 } }))
           }
         } catch(e) { /* keep polling */ }
       }, 5000)
@@ -1285,7 +1392,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 45vw), 1fr))', gap: '12px' }}>
           {SORA_VIDEOS.map(video => (
-            <SoraVideoCard key={video.id} video={video} starEnergy={starEnergy || 0} videoData={videos[video.id]} onGenerate={generateVideo} />
+            <SoraVideoCard key={video.id} video={video} starEnergy={starEnergy || 0} videoData={videos[video.id]} onGenerate={generateVideo} onWatch={setActiveVideo} />
           ))}
         </div>
       </div>
@@ -1502,6 +1609,16 @@ function EraScene({ artistName, genre, tracks, generated }) {
       )}
 
       <Notification message={notify.message} visible={notify.visible} />
+
+      {/* Fullscreen Video Player */}
+      {activeVideo && (
+        <VideoPlayer
+          videoId={activeVideo.id}
+          url={activeVideo.url}
+          label={activeVideo.label}
+          onClose={() => setActiveVideo(null)}
+        />
+      )}
     </div>
   )
 }
