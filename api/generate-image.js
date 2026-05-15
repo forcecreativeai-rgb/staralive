@@ -63,11 +63,10 @@ export default async function handler(req, res) {
         if (imgBuffer.length > 1000 && imgBuffer.length < 4_000_000) {
           const form = new FormData()
           form.append('model', 'gpt-image-1')
-          form.append('prompt', `${prompt.slice(0, 3000)} Preserve the exact face, skin tone, hair color, hair style, and physical build of the person in the reference image. Their appearance must remain identical.`)
+          form.append('prompt', `${prompt.slice(0, 3000)} Preserve the exact face, skin tone, hair color, hair style, and physical build of the person in the reference image. Their appearance must remain identical in this new scene.`)
           form.append('size', '1024x1024')
-          form.append('quality', 'high')
           const blob = new Blob([imgBuffer], { type: refMime })
-          form.append('image[]', blob, 'reference.jpg')
+          form.append('image', blob, 'reference.jpg')
 
           const editRes = await fetch('https://api.openai.com/v1/images/edits', {
             method: 'POST',
@@ -78,9 +77,15 @@ export default async function handler(req, res) {
           if (editRes.ok) {
             const item = editData.data?.[0]
             imageUrl = item?.url || (item?.b64_json ? `data:image/png;base64,${item.b64_json}` : null)
-            if (imageUrl) console.log('Character reference edit succeeded')
+            if (imageUrl) {
+              console.log('✓ Character reference edit succeeded — face consistency active')
+            } else {
+              console.warn('Edit OK but no image in response:', JSON.stringify(editData).slice(0, 200))
+            }
           } else {
-            console.warn('Image edit failed:', editData?.error?.message?.slice(0, 100))
+            console.warn('✗ Image edit failed — falling back to text-only:', editData?.error?.message?.slice(0, 150))
+            // Log full error for debugging
+            console.warn('Edit error details:', JSON.stringify(editData?.error).slice(0, 300))
           }
         } else {
           console.warn('Reference image skipped: size out of range', imgBuffer.length)

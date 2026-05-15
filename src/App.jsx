@@ -1099,6 +1099,75 @@ function StudioScene({ artistName, genre, onAdvance, onMixdownCombo }) {
 
 // ─── ACT IV: ROLLOUT ─────────────────────────────────────────────────────────
 
+// ─── IMAGE LIGHTBOX ──────────────────────────────────────────────────────────
+
+function ImageLightbox({ url, label, onClose }) {
+  // Close on escape key
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 400,
+        background: 'rgba(0,0,0,0.95)',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        animation: 'fadeIn 0.2s ease',
+        cursor: 'zoom-out',
+      }}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        style={{
+          position: 'absolute', top: '16px', right: '16px',
+          background: 'rgba(255,255,255,0.1)', border: 'none',
+          color: '#fff', borderRadius: '50%', width: '40px', height: '40px',
+          fontSize: '20px', cursor: 'pointer', zIndex: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >✕</button>
+
+      {/* Label */}
+      <div style={{
+        position: 'absolute', top: '20px', left: '20px',
+        fontSize: '12px', color: 'rgba(255,255,255,0.5)',
+        letterSpacing: '0.15em', textTransform: 'uppercase',
+      }}>
+        {label} · Press Shot
+      </div>
+
+      {/* Image */}
+      <img
+        src={url}
+        alt={label}
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '92vw', maxHeight: '88vh',
+          objectFit: 'contain',
+          borderRadius: '4px',
+          cursor: 'default',
+        }}
+      />
+
+      {/* Tap to close hint */}
+      <div style={{
+        position: 'absolute', bottom: '20px',
+        fontSize: '11px', color: 'rgba(255,255,255,0.3)',
+        letterSpacing: '0.1em',
+      }}>
+        Tap anywhere to close
+      </div>
+    </div>
+  )
+}
+
+
 function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe, faceDescription, onAdvance, onEnergyGain, onSpendEnergy, starEnergy, onCheckVisionary, onCheckIconStatus, hasPhoto, characterRef, onSetCharacterRef }) {
   const [activeScene, setActiveScene] = useState(null)
   const [generating, setGenerating] = useState(false)
@@ -1108,7 +1177,8 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
   const [bursting, setBursting] = useState(false)
   const [videos, setVideos] = useState({})
   const pollRefs = useRef({})
-  const [activeVideo, setActiveVideo] = useState(null) // { id, url, label } for fullscreen player
+  const [activeVideo, setActiveVideo] = useState(null) // { id, url, label } for fullscreen video
+  const [lightbox, setLightbox] = useState(null) // { url, label } for fullscreen image
 
   useEffect(() => { return () => Object.values(pollRefs.current).forEach(clearInterval) }, [])
 
@@ -1286,6 +1356,17 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         </div>
       )}
 
+      {/* Press Shots section header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ fontSize: '11px', letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 600 }}>📸 Press Shots</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>9 scenes available</div>
+        </div>
+        {generating && <div style={{ fontSize: '10px', color: 'var(--gold)', letterSpacing: '0.08em' }}>⏳ One at a time — next ready soon</div>}
+      </div>
+      <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '14px', lineHeight: 1.5 }}>
+        Tap any scene to generate. Tap again for an alternate take. One shoot at a time.
+      </div>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 45vw), 1fr))',
@@ -1307,7 +1388,15 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
           return (
             <div
               key={scene.id}
-              onClick={() => !isLoading && generateImage(scene.id)}
+              onClick={() => {
+                if (isLoading) return
+                if (isRealImage && hasTwo) {
+                  // Has both alts — cycle selection
+                  setSelected(s => ({ ...s, [scene.id]: s[scene.id] === 1 ? 0 : 1 }))
+                } else {
+                  generateImage(scene.id)
+                }
+              }}
               style={{
                 cursor: isLoading ? 'wait' : 'pointer',
                 borderRadius: '8px',
@@ -1330,17 +1419,31 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
                 width: '100%',
               }}>
                 {isRealImage && (
-                  <img
-                    src={displayUrl}
-                    alt={scene.label}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      objectPosition: 'center top',
-                      display: 'block',
-                    }}
-                  />
+                  <>
+                    <img
+                      src={displayUrl}
+                      alt={scene.label}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        objectPosition: 'center top',
+                        display: 'block',
+                      }}
+                    />
+                    {/* Zoom button — tap to fullscreen */}
+                    <button
+                      onClick={e => { e.stopPropagation(); setLightbox({ url: displayUrl, label: scene.label }) }}
+                      style={{
+                        position: 'absolute', bottom: '8px', right: '8px',
+                        background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '4px', color: '#fff', fontSize: '13px',
+                        padding: '4px 7px', cursor: 'pointer', zIndex: 3,
+                        backdropFilter: 'blur(4px)',
+                      }}
+                      title="View full size"
+                    >⤢</button>
+                  </>
                 )}
                 {isLoading && (
                   <div style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
@@ -1388,14 +1491,19 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         })}
       </div>
 
-      {/* ── SORA AI VIDEOS ── */}
+      {/* ── VIDEO SHOOTS ── */}
       <div style={{ marginBottom: '32px', animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 600 }}>🎬 Sora AI Videos</div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>100⚡ each · 10 sec</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ fontSize: '11px', letterSpacing: '0.3em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 600 }}>🎬 Video Shoots</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '2px 8px' }}>100⚡ each · AI-generated</div>
+          </div>
+          {Object.values(videos).some(v => v?.status === 'pending' || v?.status === 'queued') && (
+            <div style={{ fontSize: '10px', color: 'var(--gold)', letterSpacing: '0.08em' }}>⏳ Rendering — one at a time</div>
+          )}
         </div>
         <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '14px', lineHeight: 1.5 }}>
-          Cinematic AI video for your Era. Each video costs 100 Star Energy and renders in ~30–90 seconds.
+          Cinematic AI video shoots for your Era. 100 Star Energy each. Renders in ~60–90 seconds — one shoot at a time.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 45vw), 1fr))', gap: '12px' }}>
           {SORA_VIDEOS.map(video => (
@@ -1421,13 +1529,32 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
 
       {bursting && <StarBurst message="DROP YOUR ERA" subtitle="The World Is Watching" onDone={() => { setBursting(false); onAdvance({ generated, selectedAlts: selected }) }} />}
       <Notification message={notify.message} visible={notify.visible} />
+
+      {/* Fullscreen Press Shot Lightbox */}
+      {lightbox && (
+        <ImageLightbox
+          url={lightbox.url}
+          label={lightbox.label}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+
+      {/* Fullscreen Video Player */}
+      {activeVideo && (
+        <VideoPlayer
+          videoId={activeVideo.id}
+          url={activeVideo.url}
+          label={activeVideo.label}
+          onClose={() => setActiveVideo(null)}
+        />
+      )}
     </div>
   )
 }
 
 // ─── ACT V: YOUR ERA ─────────────────────────────────────────────────────────
 
-function EraScene({ artistName, genre, tracks, generated }) {
+function EraScene({ artistName, genre, tracks, generated, selectedAlts = {} }) {
   const [albumTitle, setAlbumTitle] = useState('')
   const [dropped, setDropped] = useState(false)
   const [shareLink, setShareLink] = useState('')
@@ -1600,9 +1727,12 @@ function EraScene({ artistName, genre, tracks, generated }) {
           }}>
             {Object.entries(generated).map(([id, urls]) => {
               const urlArr = Array.isArray(urls) ? urls : [urls]
-              const url = urlArr[0]
+              // Use selectedAlts if available, else first URL
+              const altIdx = (selectedAlts && selectedAlts[id]) || 0
+              const url = urlArr[altIdx] || urlArr[0]
               const scene = AI_SCENES.find(s => s.id === id)
-              return url && (url.startsWith('http') || url.startsWith('data:')) ? (
+              const isValid = url && (url.startsWith('http') || url.startsWith('data:'))
+              return isValid ? (
                 <div key={id} style={{ borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
                   <img src={url} alt={scene?.label || id} style={{ width: '100%', aspectRatio: '1', objectFit: 'contain', display: 'block', background: '#000' }} />
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 600, letterSpacing: '0.05em' }}>
@@ -1616,16 +1746,6 @@ function EraScene({ artistName, genre, tracks, generated }) {
       )}
 
       <Notification message={notify.message} visible={notify.visible} />
-
-      {/* Fullscreen Video Player */}
-      {activeVideo && (
-        <VideoPlayer
-          videoId={activeVideo.id}
-          url={activeVideo.url}
-          label={activeVideo.label}
-          onClose={() => setActiveVideo(null)}
-        />
-      )}
     </div>
   )
 }
@@ -1820,7 +1940,7 @@ function VisionScene({ artistName, genre, onAdvance }) {
             disabled={analyzing}
             size="lg"
           >
-            {analyzing ? '✦ Analyzing your look...' : photo ? 'Build My Scenes →' : 'Skip — Use AI Persona →'}
+            {analyzing ? '✦ Locking in your look...' : photo ? 'Build My Press Shots →' : vibe.trim() ? 'Generate With My Vision →' : 'Skip — Use AI Persona →'}
           </GoldButton>
           {analyzing && (
             <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--gold)' }}>
@@ -1829,7 +1949,9 @@ function VisionScene({ artistName, genre, onAdvance }) {
           )}
           {!photo && !analyzing && (
             <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-              No photo? AI will create a cinematic artist persona from your name and genre.
+              {vibe.trim()
+                ? '✦ Your vision description will guide the AI — no photo needed.'
+                : 'No photo? AI will create a cinematic artist persona from your genre and vibe.'}
             </p>
           )}
         </div>
