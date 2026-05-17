@@ -53,32 +53,54 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: 'failed', error: errMsg })
       }
 
-      // Completed successfully — extract video URL or base64
+      // Log the full done response so we can see the actual shape
+      console.log('[veo] Done response keys:', Object.keys(d).join(', '))
+      console.log('[veo] Done response.response keys:', d.response ? Object.keys(d.response).join(', ') : 'none')
+      console.log('[veo] Full done response:', JSON.stringify(d).slice(0, 800))
+
+      // Try every known Veo response shape
       const predictions = d.response?.predictions
-      if (!predictions || predictions.length === 0) {
-        console.error('[veo] Done but no predictions in response:', JSON.stringify(d).slice(0, 400))
-        return res.status(200).json({ status: 'failed', error: 'No video in response' })
+      const videos      = d.response?.videos || d.response?.generatedSamples
+
+      // Shape A: predictions array (Imagen-style)
+      if (predictions && predictions.length > 0) {
+        const pred = predictions[0]
+        const videoUrl = pred.videoUri || pred.video?.uri || pred.uri || null
+        const videoB64 = pred.bytesBase64Encoded || pred.video?.bytesBase64Encoded || null
+        if (videoUrl) {
+          console.log('[veo] Shape A videoUri:', videoUrl.slice(0, 120))
+          return res.status(200).json({ status: 'done', url: videoUrl })
+        }
+        if (videoB64) {
+          const mimeType = pred.mimeType || 'video/mp4'
+          console.log('[veo] Shape A base64, mimeType:', mimeType)
+          return res.status(200).json({ status: 'done', url: `data:${mimeType};base64,${videoB64}` })
+        }
       }
 
-      const pred = predictions[0]
-      const videoUrl = pred.videoUri || pred.video?.uri || null
-      const videoB64 = pred.bytesBase64Encoded || pred.video?.bytesBase64Encoded || null
-
-      if (videoUrl) {
-        console.log('[veo] Job complete — videoUri:', videoUrl.slice(0, 80))
-        return res.status(200).json({ status: 'done', url: videoUrl })
+      // Shape B: videos / generatedSamples array (Veo-native)
+      if (videos && videos.length > 0) {
+        const vid = videos[0]
+        const videoUrl = vid.videoUri || vid.uri || vid.video?.uri || null
+        const videoB64 = vid.bytesBase64Encoded || vid.video?.bytesBase64Encoded || null
+        if (videoUrl) {
+          console.log('[veo] Shape B videoUri:', videoUrl.slice(0, 120))
+          return res.status(200).json({ status: 'done', url: videoUrl })
+        }
+        if (videoB64) {
+          const mimeType = vid.mimeType || 'video/mp4'
+          console.log('[veo] Shape B base64, mimeType:', mimeType)
+          return res.status(200).json({ status: 'done', url: `data:${mimeType};base64,${videoB64}` })
+        }
       }
 
-      if (videoB64) {
-        // Wrap base64 as data URI — client can play or download
-        const mimeType = pred.mimeType || 'video/mp4'
-        const dataUrl = `data:${mimeType};base64,${videoB64}`
-        console.log('[veo] Job complete — base64 video, mimeType:', mimeType)
-        return res.status(200).json({ status: 'done', url: dataUrl })
-      }
-
-      console.error('[veo] Done but no videoUri or base64:', JSON.stringify(pred).slice(0, 400))
-      return res.status(200).json({ status: 'failed', error: 'No video URL in prediction' })
+      // Unknown shape — return raw for debugging
+      console.error('[veo] Unrecognised done response shape')
+      return res.status(200).json({
+        status: 'failed',
+        error: 'Unrecognised response shape',
+        _debug: JSON.stringify(d).slice(0, 600),
+      })
 
     } catch (err) {
       console.error('[veo] Poll exception:', err.message)
