@@ -4,8 +4,9 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/generate-image.js":  { "maxDuration": 60 },
-    "api/analyze-photo.js":   { "maxDuration": 20 },
-    "api/generate-video.js":  { "maxDuration": 300 }
+    "api/generate-image.js":      { "maxDuration": 60 },
+    "api/analyze-photo.js":       { "maxDuration": 20 },
+    "api/generate-video.js":      { "maxDuration": 300 },
+    "api/generate-video-veo.js":  { "maxDuration": 300 }
   }
 }
