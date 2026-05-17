@@ -1,6 +1,7 @@
 // Google Veo 3.1 video generation — async long-running operation via Gemini API
-// POST: start a generation job  →  returns { jobName, status: 'queued' }
-// GET ?jobName=xxx: poll status →  returns { status, url|error }
+// POST:              start a generation job  →  returns { jobName, status: 'queued' }
+// GET ?jobName=xxx:  poll status             →  returns { status, url|error }
+// GET ?stream=url:   proxy video stream      →  streams video/mp4 with auth header
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -22,7 +23,40 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured' })
   }
 
-  // ── POLL STATUS: GET /api/generate-video-veo?jobName=operations/xxx
+  // ── STREAM PROXY: GET /api/generate-video-veo?stream=ENCODED_URL
+  // Videos from generativelanguage.googleapis.com require auth — proxy here
+  if (req.method === 'GET' && req.query.stream) {
+    const fileUrl = decodeURIComponent(req.query.stream)
+    console.log('[veo] Stream proxy for:', fileUrl.slice(0, 120))
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000)
+      const videoRes = await fetch(fileUrl, {
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+      if (!videoRes.ok) {
+        console.error('[veo] Stream fetch failed:', videoRes.status)
+        return res.status(videoRes.status).json({ error: 'Video stream failed' })
+      }
+      const contentType = videoRes.headers.get('content-type') || 'video/mp4'
+      res.setHeader('Content-Type', contentType)
+      res.setHeader('Cache-Control', 'public, max-age=3600')
+      const reader = videoRes.body.getReader()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        res.write(Buffer.from(value))
+      }
+      return res.end()
+    } catch (err) {
+      console.error('[veo] Stream error:', err.message)
+      return res.status(500).json({ error: 'Stream error: ' + err.message })
+    }
+  }
+
+  // ── POLL STATUS: GET /api/generate-video-veo?jobName=models/.../operations/xxx
   if (req.method === 'GET') {
     const { jobName } = req.query
     if (!jobName) return res.status(400).json({ error: 'jobName query param required' })
@@ -39,68 +73,32 @@ export default async function handler(req, res) {
         return res.status(r.status).json({ error: d?.error?.message || 'Poll failed' })
       }
 
-      console.log('[veo] Poll response done:', d.done, 'has error:', !!d.error)
+      console.log('[veo] Poll done:', d.done, 'has error:', !!d.error)
 
-      // Still running
       if (!d.done) {
         return res.status(200).json({ status: 'pending', progress: 50 })
       }
 
-      // Completed with error
       if (d.error) {
-        const errMsg = d.error.message || 'Generation failed'
-        console.error('[veo] Job failed:', errMsg)
-        return res.status(200).json({ status: 'failed', error: errMsg })
+        console.error('[veo] Job failed:', d.error.message)
+        return res.status(200).json({ status: 'failed', error: d.error.message || 'Generation failed' })
       }
 
-      // Log the full done response so we can see the actual shape
-      console.log('[veo] Done response keys:', Object.keys(d).join(', '))
-      console.log('[veo] Done response.response keys:', d.response ? Object.keys(d.response).join(', ') : 'none')
-      console.log('[veo] Full done response:', JSON.stringify(d).slice(0, 800))
+      // Extract from confirmed response shape:
+      // d.response.generateVideoResponse.generatedSamples[0].video.uri
+      const videoUri = d.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri
 
-      // Try every known Veo response shape
-      const predictions = d.response?.predictions
-      const videos      = d.response?.videos || d.response?.generatedSamples
-
-      // Shape A: predictions array (Imagen-style)
-      if (predictions && predictions.length > 0) {
-        const pred = predictions[0]
-        const videoUrl = pred.videoUri || pred.video?.uri || pred.uri || null
-        const videoB64 = pred.bytesBase64Encoded || pred.video?.bytesBase64Encoded || null
-        if (videoUrl) {
-          console.log('[veo] Shape A videoUri:', videoUrl.slice(0, 120))
-          return res.status(200).json({ status: 'done', url: videoUrl })
-        }
-        if (videoB64) {
-          const mimeType = pred.mimeType || 'video/mp4'
-          console.log('[veo] Shape A base64, mimeType:', mimeType)
-          return res.status(200).json({ status: 'done', url: `data:${mimeType};base64,${videoB64}` })
-        }
+      if (videoUri) {
+        // Append API key so the browser can access the file URL directly
+        const sep = videoUri.includes('?') ? '&' : '?'
+        const authenticatedUrl = videoUri + sep + 'key=' + apiKey
+        console.log('[veo] Done — videoUri:', videoUri.slice(0, 120))
+        return res.status(200).json({ status: 'done', url: authenticatedUrl })
       }
 
-      // Shape B: videos / generatedSamples array (Veo-native)
-      if (videos && videos.length > 0) {
-        const vid = videos[0]
-        const videoUrl = vid.videoUri || vid.uri || vid.video?.uri || null
-        const videoB64 = vid.bytesBase64Encoded || vid.video?.bytesBase64Encoded || null
-        if (videoUrl) {
-          console.log('[veo] Shape B videoUri:', videoUrl.slice(0, 120))
-          return res.status(200).json({ status: 'done', url: videoUrl })
-        }
-        if (videoB64) {
-          const mimeType = vid.mimeType || 'video/mp4'
-          console.log('[veo] Shape B base64, mimeType:', mimeType)
-          return res.status(200).json({ status: 'done', url: `data:${mimeType};base64,${videoB64}` })
-        }
-      }
-
-      // Unknown shape — return raw for debugging
-      console.error('[veo] Unrecognised done response shape')
-      return res.status(200).json({
-        status: 'failed',
-        error: 'Unrecognised response shape',
-        _debug: JSON.stringify(d).slice(0, 600),
-      })
+      // Fallback — log full response so we can diagnose unexpected shapes
+      console.error('[veo] Done but no videoUri found. Response:', JSON.stringify(d).slice(0, 800))
+      return res.status(200).json({ status: 'failed', error: 'No video URI in response' })
 
     } catch (err) {
       console.error('[veo] Poll exception:', err.message)
@@ -117,7 +115,6 @@ export default async function handler(req, res) {
     if (imageUrl) console.log('[veo] Reference image provided:', imageUrl.slice(0, 80))
 
     try {
-      // Build instance — conditionally include reference image
       const instance = { prompt: prompt.slice(0, 2000) }
 
       if (imageUrl) {
@@ -159,7 +156,6 @@ export default async function handler(req, res) {
         return res.status(r.status).json({ error: d?.error?.message || 'Job creation failed' })
       }
 
-      // Long-running operation name e.g. "operations/123456"
       const jobName = d.name
       if (!jobName) {
         console.error('[veo] No operation name in response:', JSON.stringify(d).slice(0, 300))
