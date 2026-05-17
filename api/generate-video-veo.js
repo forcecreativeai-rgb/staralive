@@ -118,7 +118,6 @@ export default async function handler(req, res) {
         parameters: {
           aspectRatio: '16:9',
           durationSeconds: 8,
-          enhancePrompt: true,
         },
       }
 
