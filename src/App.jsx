@@ -2063,7 +2063,7 @@ export default function App() {
   function gainEnergy(amount) {
     setStarEnergy(e => e + amount)
     setEnergyGained(amount)
-    setTimeout(() => setEnergyGained(0), 2000)
+    setTimeout(() => setEnergyGained(0), 1600) // clear before 2s to avoid bleed on transitions
   }
 
   function spendEnergy(amount) {
@@ -2112,6 +2112,8 @@ export default function App() {
       const award = ENERGY_AWARDS[scene] || 0
       if (award > 0) gainEnergy(award)
       setBurstActive(true)
+      // Clear floating energy text before scene transition to prevent bleed
+      setTimeout(() => setEnergyGained(0), 400)
       setTimeout(() => setScene(next), 600)
     }
   }
@@ -2145,7 +2147,7 @@ export default function App() {
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 900, letterSpacing: '0.08em', color: 'var(--gold)' }}>
             STAR<span style={{ color: 'var(--text-dim)' }}>AI</span>IVE
           </div>
-          <StarEnergyDisplay energy={starEnergy} gained={energyGained} />
+          <StarEnergyDisplay energy={starEnergy} gained={energyGained} key={scene} />
         </div>
         <ProgressBar scene={scene} />
       </header>

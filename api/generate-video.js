@@ -1,3 +1,7 @@
+// DEPRECATED — Sora 2 API shuts down September 24 2026
+// This file is no longer called by the app. Kept for reference only.
+// Active video generation is handled by generate-video-veo.js
+
 // Sora 2 video generation — async polling + authenticated proxy stream
 // Cost: seconds='4' = ~$0.80, seconds='8' = ~$1.60, seconds='12' = ~$2.40
 

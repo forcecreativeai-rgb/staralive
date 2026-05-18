@@ -1,7 +1,7 @@
 // Google Veo 3.1 video generation — async long-running operation via Gemini API
 // POST:              start a generation job  →  returns { jobName, status: 'queued' }
 // GET ?jobName=xxx:  poll status             →  returns { status, url|error }
-// GET ?stream=url:   proxy video stream      →  streams video/mp4 with auth header
+// GET ?stream=url:   proxy video stream      →  streams video/mp4 server-side (key never exposed)
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -9,12 +9,27 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-function setCors(res) {
-  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v))
+// SECURITY: Allowlist for stream proxy — only Gemini Files API URLs allowed
+// Prevents SSRF attacks where attacker passes internal URLs
+const ALLOWED_STREAM_HOST = 'generativelanguage.googleapis.com'
+
+// SECURITY: Allowlist for image reference URLs
+const ALLOWED_IMAGE_HOSTS = [
+  'generativelanguage.googleapis.com',
+  'staralive.vercel.app',
+  'oaidalleapiprodscus.blob.core.windows.net', // OpenAI DALL-E CDN
+  'cdn.openai.com',
+]
+
+function isAllowedHost(urlStr, allowedHosts) {
+  try {
+    const parsed = new URL(urlStr)
+    return allowedHosts.some(h => parsed.hostname === h || parsed.hostname.endsWith('.' + h))
+  } catch { return false }
 }
 
 export default async function handler(req, res) {
-  setCors(res)
+  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v))
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const apiKey = process.env.GEMINI_API_KEY
@@ -24,10 +39,16 @@ export default async function handler(req, res) {
   }
 
   // ── STREAM PROXY: GET /api/generate-video-veo?stream=ENCODED_URL
-  // Videos from generativelanguage.googleapis.com require auth — proxy here
   if (req.method === 'GET' && req.query.stream) {
     const fileUrl = decodeURIComponent(req.query.stream)
-    console.log('[veo] Stream proxy for:', fileUrl.slice(0, 120))
+
+    // SECURITY: Only proxy Gemini Files API URLs — block SSRF
+    if (!isAllowedHost(fileUrl, [ALLOWED_STREAM_HOST])) {
+      console.error('[veo] Stream blocked — disallowed host:', fileUrl.slice(0, 80))
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
+    console.log('[veo] Stream proxy:', fileUrl.slice(0, 100))
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 30000)
@@ -43,6 +64,7 @@ export default async function handler(req, res) {
       const contentType = videoRes.headers.get('content-type') || 'video/mp4'
       res.setHeader('Content-Type', contentType)
       res.setHeader('Cache-Control', 'public, max-age=3600')
+      res.setHeader('Accept-Ranges', 'bytes')
       const reader = videoRes.body.getReader()
       while (true) {
         const { done, value } = await reader.read()
@@ -57,46 +79,49 @@ export default async function handler(req, res) {
   }
 
   // ── POLL STATUS: GET /api/generate-video-veo?jobName=models/.../operations/xxx
-  if (req.method === 'GET') {
+  if (req.method === 'GET' && req.query.jobName) {
     const { jobName } = req.query
-    if (!jobName) return res.status(400).json({ error: 'jobName query param required' })
 
-    console.log('[veo] Polling job:', jobName)
+    // SECURITY: Validate jobName format to prevent injection
+    if (!jobName.startsWith('models/') || !jobName.includes('/operations/')) {
+      return res.status(400).json({ error: 'Invalid jobName format' })
+    }
 
     try {
-      const pollUrl = `https://generativelanguage.googleapis.com/v1beta/${jobName}?key=${apiKey}`
-      const r = await fetch(pollUrl)
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/${jobName}?key=${apiKey}`
+      )
       const d = await r.json()
-
       if (!r.ok) {
-        console.error('[veo] Poll HTTP error:', r.status, JSON.stringify(d).slice(0, 300))
+        console.error('[veo] Poll error:', r.status, JSON.stringify(d).slice(0, 200))
         return res.status(r.status).json({ error: d?.error?.message || 'Poll failed' })
       }
 
-      console.log('[veo] Poll done:', d.done, 'has error:', !!d.error)
+      console.log('[veo] Poll done:', d.done, 'progress:', d.metadata?.progressPercent || 'n/a')
 
       if (!d.done) {
-        return res.status(200).json({ status: 'pending', progress: 50 })
+        // Try to extract real progress from metadata if available
+        const progress = d.metadata?.progressPercent || d.progress || null
+        return res.status(200).json({ status: 'pending', progress })
       }
 
       if (d.error) {
-        console.error('[veo] Job failed:', d.error.message)
-        return res.status(200).json({ status: 'failed', error: d.error.message || 'Generation failed' })
+        const errMsg = d.error.message || 'Generation failed'
+        console.error('[veo] Job failed:', errMsg)
+        const isPolicy = errMsg.toLowerCase().includes('safety') ||
+                         errMsg.toLowerCase().includes('policy') ||
+                         errMsg.toLowerCase().includes('prohibited')
+        return res.status(200).json({ status: 'failed', error: errMsg, isPolicy })
       }
 
-      // Extract from confirmed response shape:
-      // d.response.generateVideoResponse.generatedSamples[0].video.uri
       const videoUri = d.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri
-
       if (videoUri) {
-        // Return a proxied URL — key stays server-side, never reaches the browser
         const proxyUrl = `/api/generate-video-veo?stream=${encodeURIComponent(videoUri)}`
-        console.log('[veo] Done — proxying videoUri:', videoUri.slice(0, 120))
+        console.log('[veo] Done — proxying:', videoUri.slice(0, 80))
         return res.status(200).json({ status: 'done', url: proxyUrl })
       }
 
-      // Fallback — log full response so we can diagnose unexpected shapes
-      console.error('[veo] Done but no videoUri found. Response:', JSON.stringify(d).slice(0, 800))
+      console.error('[veo] Done but no videoUri:', JSON.stringify(d).slice(0, 400))
       return res.status(200).json({ status: 'failed', error: 'No video URI in response' })
 
     } catch (err) {
@@ -105,59 +130,81 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── START JOB: POST /api/generate-video-veo
+  // ── CREATE JOB: POST /api/generate-video-veo
   if (req.method === 'POST') {
     const { prompt, imageUrl } = req.body || {}
     if (!prompt) return res.status(400).json({ error: 'prompt is required' })
 
-    console.log('[veo] Starting Veo 3.1 job. Prompt:', prompt.slice(0, 100))
-    if (imageUrl) console.log('[veo] Reference image provided:', imageUrl.slice(0, 80))
+    // SECURITY: Validate prompt length
+    if (prompt.length > 2000) return res.status(400).json({ error: 'Prompt too long' })
+
+    const instance = { prompt: prompt.slice(0, 2000) }
+
+    if (imageUrl) {
+      // SECURITY: Only fetch images from allowed hosts — prevent SSRF
+      const isDataUrl = imageUrl.startsWith('data:')
+      const isAllowed = isDataUrl || isAllowedHost(imageUrl, ALLOWED_IMAGE_HOSTS)
+
+      if (!isAllowed) {
+        console.warn('[veo] Image URL blocked — disallowed host:', imageUrl.slice(0, 80))
+        // Don't fail — just skip the reference image and continue without it
+      } else {
+        try {
+          let imgBase64, imgMime
+          if (isDataUrl) {
+            const match = imageUrl.match(/^data:([^;]+);base64,(.+)$/)
+            if (match) { imgMime = match[1]; imgBase64 = match[2] }
+          } else {
+            const imgRes = await fetch(imageUrl, {
+              signal: AbortSignal.timeout(8000),
+            })
+            if (imgRes.ok) {
+              const buf = await imgRes.arrayBuffer()
+              // SECURITY: Reject suspiciously large images (>4MB)
+              if (buf.byteLength > 4_000_000) {
+                console.warn('[veo] Reference image too large:', buf.byteLength)
+              } else {
+                imgBase64 = Buffer.from(buf).toString('base64')
+                imgMime = (imgRes.headers.get('content-type') || 'image/jpeg').split(';')[0]
+              }
+            }
+          }
+          if (imgBase64 && imgMime) {
+            instance.image = { bytesBase64Encoded: imgBase64, mimeType: imgMime }
+            console.log('[veo] Reference image encoded:', imgMime, 'size:', imgBase64.length)
+          }
+        } catch (e) {
+          console.warn('[veo] Could not encode reference image:', e.message)
+        }
+      }
+    }
 
     try {
-      const instance = { prompt: prompt.slice(0, 2000) }
-
-      if (imageUrl) {
-        console.log('[veo] Fetching reference image...')
-        const imgRes = await fetch(imageUrl)
-        if (!imgRes.ok) {
-          console.error('[veo] Failed to fetch image:', imgRes.status)
-          return res.status(400).json({ error: 'Could not fetch imageUrl: ' + imgRes.status })
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instances: [instance],
+            parameters: { aspectRatio: '16:9', durationSeconds: 8 },
+          }),
         }
-        const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
-        const mimeType = contentType.split(';')[0].trim()
-        const buffer = await imgRes.arrayBuffer()
-        const base64 = Buffer.from(buffer).toString('base64')
-        instance.image = { bytesBase64Encoded: base64, mimeType }
-        console.log('[veo] Image fetched, mimeType:', mimeType, 'size:', buffer.byteLength, 'bytes')
-      }
-
-      const body = {
-        instances: [instance],
-        parameters: {
-          aspectRatio: '16:9',
-          durationSeconds: 8,
-        },
-      }
-
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${apiKey}`
-      console.log('[veo] POSTing to Gemini predictLongRunning...')
-
-      const r = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-
+      )
       const d = await r.json()
-
       if (!r.ok) {
-        console.error('[veo] Create error:', r.status, JSON.stringify(d).slice(0, 400))
-        return res.status(r.status).json({ error: d?.error?.message || 'Job creation failed' })
+        console.error('[veo] Create error:', r.status, JSON.stringify(d).slice(0, 300))
+        const isPolicy = d?.error?.message?.toLowerCase().includes('safety') ||
+                         d?.error?.message?.toLowerCase().includes('policy')
+        return res.status(r.status).json({
+          error: d?.error?.message || 'Job creation failed',
+          isPolicy,
+        })
       }
 
       const jobName = d.name
       if (!jobName) {
-        console.error('[veo] No operation name in response:', JSON.stringify(d).slice(0, 300))
+        console.error('[veo] No operation name:', JSON.stringify(d).slice(0, 200))
         return res.status(500).json({ error: 'No operation name returned' })
       }
 
