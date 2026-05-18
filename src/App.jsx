@@ -1305,7 +1305,7 @@ function RolloutScene({ artistName, genre, tracks, artistPhotoBase64, customVibe
         }),
       })
       const data = await res.json()
-      if (!res.ok || !data.jobId) {
+      if (!res.ok || !data.jobName) {
         setVideos(v => ({ ...v, [videoId]: { status: 'idle' } }))
         if (onEnergyGain) onEnergyGain(100) // refund if creation fails
         const isBlocked = data.isPolicy || data.error?.toLowerCase().includes('safety') || data.error?.toLowerCase().includes('policy')
