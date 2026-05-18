@@ -89,11 +89,10 @@ export default async function handler(req, res) {
       const videoUri = d.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri
 
       if (videoUri) {
-        // Append API key so the browser can access the file URL directly
-        const sep = videoUri.includes('?') ? '&' : '?'
-        const authenticatedUrl = videoUri + sep + 'key=' + apiKey
-        console.log('[veo] Done — videoUri:', videoUri.slice(0, 120))
-        return res.status(200).json({ status: 'done', url: authenticatedUrl })
+        // Return a proxied URL — key stays server-side, never reaches the browser
+        const proxyUrl = `/api/generate-video-veo?stream=${encodeURIComponent(videoUri)}`
+        console.log('[veo] Done — proxying videoUri:', videoUri.slice(0, 120))
+        return res.status(200).json({ status: 'done', url: proxyUrl })
       }
 
       // Fallback — log full response so we can diagnose unexpected shapes
