@@ -52,8 +52,12 @@ export default async function handler(req, res) {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 30000)
-      const videoRes = await fetch(fileUrl, {
-        headers: { 'Authorization': `Bearer ${apiKey}` },
+
+      // Gemini Files API uses ?key= query param, NOT Bearer auth
+      const sep = fileUrl.includes('?') ? '&' : '?'
+      const authUrl = `${fileUrl}${sep}key=${apiKey}`
+
+      const videoRes = await fetch(authUrl, {
         signal: controller.signal,
       })
       clearTimeout(timeout)
